@@ -7,11 +7,13 @@ import fs from "fs";
 import { UserRouter } from "./routers/userRouter.js";
 import { authRouter } from "./routers/authRouter.js";
 import path from "path";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
 
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -29,7 +31,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerJson));
 app.use("/api/v1/auth", authRouter);
 
 //user routes
-app.use("/api/v1/user",UserRouter)
+app.use("/api/v1/user", UserRouter)
 
 // Error handling
 app.use((req, res, next) => {
