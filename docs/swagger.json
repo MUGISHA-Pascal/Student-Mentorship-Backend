@@ -23,7 +23,9 @@
     "/auth/register": {
       "post": {
         "summary": "Register a new user",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -31,23 +33,51 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "firstName": { "type": "string", "example": "John" },
-                  "lastName": { "type": "string", "example": "Doe" },
+                  "firstName": {
+                    "type": "string",
+                    "example": "John"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
                   "email": {
                     "type": "string",
                     "example": "johndoe@example.com"
                   },
-                  "age": { "type": "integer", "example": 30 },
-                  "gender": { "type": "string", "example": "male" },
-                  "password": { "type": "string", "example": "password123" },
+                  "age": {
+                    "type": "integer",
+                    "example": 30
+                  },
+                  "gender": {
+                    "type": "string",
+                    "example": "male"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  },
                   "role": {
                     "type": "string",
-                    "enum": ["STUDENT", "COACH", "EMPLOYEE", "ADMIN"],
+                    "enum": [
+                      "STUDENT",
+                      "COACH",
+                      "EMPLOYEE",
+                      "ADMIN"
+                    ],
                     "example": "STUDENT"
                   },
-                  "career": { "type": "string", "example": "yoga instructor" }
+                  "career": {
+                    "type": "string",
+                    "example": "GOYA instructor"
+                  }
                 },
-                "required": ["firstName", "lastName", "email", "password"]
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "password"
+                ]
               }
             }
           }
@@ -67,13 +97,27 @@
                     "user": {
                       "type": "object",
                       "properties": {
-                        "firstName": { "type": "string" },
-                        "lastName": { "type": "string" },
-                        "email": { "type": "string" },
-                        "age": { "type": "integer" },
-                        "gender": { "type": "string" },
-                        "role": { "type": "string" },
-                        "career": { "type": "string" }
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "age": {
+                          "type": "integer"
+                        },
+                        "gender": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "career": {
+                          "type": "string"
+                        }
                       }
                     }
                   }
@@ -88,7 +132,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": { "type": "string" }
+                    "error": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -101,7 +147,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": { "type": "string" }
+                    "error": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -113,7 +161,9 @@
     "/auth/login": {
       "post": {
         "summary": "Login user",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -125,9 +175,15 @@
                     "type": "string",
                     "example": "johndoe@example.com"
                   },
-                  "password": { "type": "string", "example": "password123" }
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
                 },
-                "required": ["email", "password"]
+                "required": [
+                  "email",
+                  "password"
+                ]
               }
             }
           }
@@ -147,16 +203,33 @@
                     "user": {
                       "type": "object",
                       "properties": {
-                        "firstName": { "type": "string" },
-                        "lastName": { "type": "string" },
-                        "email": { "type": "string" },
-                        "age": { "type": "integer" },
-                        "gender": { "type": "string" },
-                        "role": { "type": "string" },
-                        "career": { "type": "string" }
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "age": {
+                          "type": "integer"
+                        },
+                        "gender": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "career": {
+                          "type": "string"
+                        }
                       }
                     },
-                    "token": { "type": "string", "example": "JWT_token_here" }
+                    "token": {
+                      "type": "string",
+                      "example": "JWT_token_here"
+                    }
                   }
                 }
               }
@@ -169,7 +242,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": { "type": "string" }
+                    "error": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -182,7 +257,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": { "type": "string" }
+                    "error": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -195,7 +272,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": { "type": "string" }
+                    "error": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -207,7 +286,9 @@
     "/user": {
       "get": {
         "summary": "Get user information",
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -228,13 +309,27 @@
                     "user": {
                       "type": "object",
                       "properties": {
-                        "firstName": { "type": "string" },
-                        "lastName": { "type": "string" },
-                        "email": { "type": "string" },
-                        "age": { "type": "integer" },
-                        "gender": { "type": "string" },
-                        "role": { "type": "string" },
-                        "career": { "type": "string" }
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "age": {
+                          "type": "integer"
+                        },
+                        "gender": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "career": {
+                          "type": "string"
+                        }
                       }
                     }
                   }
@@ -249,7 +344,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": { "type": "string" }
+                    "error": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -262,7 +359,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": { "type": "string" }
+                    "error": {
+                      "type": "string"
+                    }
                   }
                 }
               }
