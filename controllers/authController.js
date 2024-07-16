@@ -36,7 +36,7 @@ export const RegisterUser = async (req, res) => {
     await sendEmail(
       email,
       "Welcome to GOYA!",
-      "Dear client,\n\nCongratulations! You have successfully registered with GOYA (Go Young Africans). Your journey towards greatness begins here. You are now on our waitlist, and we will notify you as soon as GOYA is ready to be used. Stay tuned for exciting updates!\n\nWarm regards,\nThe GOYA Team",
+      "Dear Client,\n\nCongratulations! You have successfully registered with GOYA (Go Young Africans). Your journey towards greatness begins here. You are now on our waitlist, and we will notify you as soon as GOYA is ready to be used. Meanwhile, please take a moment to fill out this form to help us better understand your needs and preferences:\n\n[Google Form Link](https://docs.google.com/forms/d/1tsRHt1fscAF7xPOG2WLJA6x8pIf2-3s_fAyARSCujuY)\n\nStay tuned for exciting updates!\n\nWarm regards,\nThe GOYA Team",
       null
     );
     // Create user using Prisma
