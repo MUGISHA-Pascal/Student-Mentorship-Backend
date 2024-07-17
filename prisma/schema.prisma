@@ -12,13 +12,14 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model User {
-  id        String    @id @default(uuid())
+  id        String  @id @default(uuid())
   firstName String
   lastName  String
-  email     String   @unique
+  email     String  @unique
   age       Int?
-  gender    String?  // Assuming gender can be a string like 'male', 'female', 'other'
+  gender    String? // Assuming gender can be a string like 'male', 'female', 'other'
   password  String
   role      Role
   career    String?
@@ -26,7 +27,19 @@ model User {
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("users")
+}
+
+model OTP {
+  id        Int      @id @default(autoincrement())
+  otp       String
+  secret    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  email     String
+
+  @@map("otps")
 }
 
 // Define the enum for roles
