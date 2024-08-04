@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Yoga App API Documentation",
+    "title": "Goya App API Documentation",
     "version": "1.0.0",
     "description": "API endpoints for registering users, logging in, and accessing user information."
   },

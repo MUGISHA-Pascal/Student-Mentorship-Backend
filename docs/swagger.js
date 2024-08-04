@@ -10,10 +10,10 @@ const doc = {
   info: {
     version: "2.0.0",
     title: "GOYA",
-    description: "An API for managing a GOYA agent",
+    description: "An API for managing a  certain user",
     contact: {
       name: "API Support",
-      email: "jodos2006@gmail.com",
+      email: "goya@gmail.com",
     },
   },
   host: config.swagger.host,

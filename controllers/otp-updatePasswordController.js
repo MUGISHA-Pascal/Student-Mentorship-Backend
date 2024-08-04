@@ -1,4 +1,3 @@
-// otpService.js
 import { PrismaClient } from "@prisma/client";
 import speakeasy from "speakeasy";
 import sendEmail from "../utils/sendEmail.js";
@@ -30,7 +29,7 @@ export const generateOtp = async (req, res) => {
     await sendEmail(
       email,
       "reset password",
-      `Dear Client, You have requested to reset your password for your GOYA (Go Young Africans) account. To complete this process, please use the following OTP (One-Time Password): OTP: ${otp}. If you did not request a password reset, please ignore this email or contact our support team immediately. Warm regards, The GOYA Team`,
+      `Dear Client, You have requested to reset your password for your GOYA (Go Young Africa) account. To complete this process, please use the following OTP (One-Time Password): OTP: ${otp}. If you did not request a password reset, please ignore this email or contact our support team immediately. Warm regards, The GOYA Team`,
       null
     );
     // Save OTP details to the database
@@ -120,7 +119,7 @@ export const updatePassword = async (req, res) => {
       });
     await sendEmail(
       email,
-      "Dear Client, Your password has been successfully updated for your GOYA (Go Young Africans) account. You can now use your new password to log in to your account. If you did not request this change or if you encounter any issues, please contact our support team immediately. Warm regards, The GOYA Team",
+      "Dear Client, Your password has been successfully updated for your GOYA (Go Young Africa) account. You can now use your new password to log in to your account. If you did not request this change or if you encounter any issues, please contact our support team immediately. Warm regards, The GOYA Team",
       null
     );
     const newPassword = await bcrypt.hash(password, 10);
