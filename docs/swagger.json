@@ -23,7 +23,9 @@
     "/auth/register": {
       "post": {
         "summary": "Register a new user",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -43,9 +45,9 @@
                     "type": "string",
                     "example": "johndoe@example.com"
                   },
-                  "age": {
-                    "type": "integer",
-                    "example": 30
+                  "dob": {
+                    "type": "string",
+                    "example": "2006-06-05"
                   },
                   "gender": {
                     "type": "string",
@@ -57,7 +59,12 @@
                   },
                   "role": {
                     "type": "string",
-                    "enum": ["STUDENT", "COACH", "EMPLOYEE", "ADMIN"],
+                    "enum": [
+                      "STUDENT",
+                      "COACH",
+                      "EMPLOYEE",
+                      "ADMIN"
+                    ],
                     "example": "STUDENT"
                   },
                   "career": {
@@ -65,7 +72,12 @@
                     "example": "GOYA instructor"
                   }
                 },
-                "required": ["firstName", "lastName", "email", "password"]
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "password"
+                ]
               }
             }
           }
@@ -94,8 +106,8 @@
                         "email": {
                           "type": "string"
                         },
-                        "age": {
-                          "type": "integer"
+                        "dob": {
+                          "type": "string"
                         },
                         "gender": {
                           "type": "string"
@@ -149,7 +161,9 @@
     "/auth/login": {
       "post": {
         "summary": "Login user",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -166,7 +180,10 @@
                     "example": "password123"
                   }
                 },
-                "required": ["email", "password"]
+                "required": [
+                  "email",
+                  "password"
+                ]
               }
             }
           }
@@ -195,8 +212,8 @@
                         "email": {
                           "type": "string"
                         },
-                        "age": {
-                          "type": "integer"
+                        "dob": {
+                          "type": "string"
                         },
                         "gender": {
                           "type": "string"
@@ -269,7 +286,9 @@
     "/user": {
       "get": {
         "summary": "Get user information",
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -299,8 +318,8 @@
                         "email": {
                           "type": "string"
                         },
-                        "age": {
-                          "type": "integer"
+                        "dob": {
+                          "type": "string"
                         },
                         "gender": {
                           "type": "string"
@@ -354,7 +373,9 @@
     "/user/generate-otp": {
       "post": {
         "summary": "Generate OTP for password reset",
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -367,7 +388,9 @@
                     "example": "johndoe@example.com"
                   }
                 },
-                "required": ["email"]
+                "required": [
+                  "email"
+                ]
               }
             }
           }
@@ -429,7 +452,9 @@
     "/user/verify-otp": {
       "get": {
         "summary": "Verify OTP for password reset",
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "parameters": [
           {
             "name": "otp",
@@ -501,7 +526,9 @@
     "/user/update-password": {
       "patch": {
         "summary": "Update user password",
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -518,7 +545,10 @@
                     "example": "newpassword123"
                   }
                 },
-                "required": ["email", "password"]
+                "required": [
+                  "email",
+                  "password"
+                ]
               }
             }
           }

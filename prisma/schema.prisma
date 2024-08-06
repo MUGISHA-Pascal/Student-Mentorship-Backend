@@ -18,8 +18,8 @@ model User {
   firstName String
   lastName  String
   email     String  @unique
-  age       Int?
-  gender    String? // Assuming gender can be a string like 'male', 'female', 'other'
+  dob       String
+  gender    String // 'male', 'female', 'other'
   password  String
   role      Role
   career    String?

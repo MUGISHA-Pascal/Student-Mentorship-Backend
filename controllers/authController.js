@@ -1,15 +1,13 @@
-// Assuming this is in a file like userController.js
-
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { userSchema } from "../schemas/sign-up.js";
 import { generateToken } from "../middleware/auth.js";
 import { loginSchema } from "../schemas/login-schema.js";
 import sendEmail from "../utils/sendEmail.js";
+import emailTemplate from "../utils/emailTemplate.js";
 const prisma = new PrismaClient();
 
 // Function to create a new user
-
 export const RegisterUser = async (req, res) => {
   const { error, value } = userSchema.validate(req.body);
 
@@ -17,7 +15,7 @@ export const RegisterUser = async (req, res) => {
     return res.status(400).json({ error: error.details[0].message });
   }
 
-  const { firstName, lastName, email, age, gender, password, role, career } =
+  const { firstName, lastName, email, dob, gender, password, role, career } =
     value;
 
   try {
@@ -33,11 +31,21 @@ export const RegisterUser = async (req, res) => {
         .json({ message: "user already exist", user: null });
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // await sendEmail(
+    //   email,
+    //   "Welcome to GOYA!",
+    //   "Dear Client,\n\nCongratulations! You have successfully registered with GOYA (Go Young Africa). Your journey towards greatness begins here. You are now on our waitlist, and we will notify you as soon as possible. Meanwhile, please take a moment to fill out this form to help us better understand your needs and preferences:\n\n[Google Form Link](https://docs.google.com/forms/d/1tsRHt1fscAF7xPOG2WLJA6x8pIf2-3s_fAyARSCujuY)\n\nStay tuned for exciting updates!\n\nWarm regards,\nThe GOYA Team",
+    //   null
+    // );
+
+    const subject = 'Welcome to GOYA!';
+    const htmlContent = emailTemplate();
+
     await sendEmail(
       email,
-      "Welcome to GOYA!",
-      "Dear Client,\n\nCongratulations! You have successfully registered with GOYA (Go Young Africa). Your journey towards greatness begins here. You are now on our waitlist, and we will notify you as soon as possible. Meanwhile, please take a moment to fill out this form to help us better understand your needs and preferences:\n\n[Google Form Link](https://docs.google.com/forms/d/1tsRHt1fscAF7xPOG2WLJA6x8pIf2-3s_fAyARSCujuY)\n\nStay tuned for exciting updates!\n\nWarm regards,\nThe GOYA Team",
-      null
+      subject,
+      null,
+      htmlContent
     );
     // Create user using Prisma
     const newUser = await prisma.user.create({
@@ -45,7 +53,7 @@ export const RegisterUser = async (req, res) => {
         firstName,
         lastName,
         email,
-        age,
+        dob,
         gender,
         password: hashedPassword,
         role,

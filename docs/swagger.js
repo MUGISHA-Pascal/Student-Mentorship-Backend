@@ -86,6 +86,6 @@ const endpointsFiles = [
   // path.resolve(__dirname, "../controllers/user-controller.js"),
 ];
 
-swaggerAutogen(options)(outputFile, endpointsFiles, doc).then(()=>{
+swaggerAutogen(options)(outputFile, endpointsFiles, doc).then(() => {
 });
 

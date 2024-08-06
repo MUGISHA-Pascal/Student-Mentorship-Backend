@@ -9,19 +9,19 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: process.env.EMAIL, // Your email address
-    pass: process.env.EMAIL_PASSWORD, // Your email password
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASSWORD,
   },
 });
 
 export const sendEmail = async (to, subject, text, html) => {
   try {
     const mailOptions = {
-      from: process.env.EMAIL, // sender address
-      to, // list of receivers
-      subject, // Subject line
-      text, // plain text body
-      html, // html body
+      from: process.env.EMAIL,
+      to,
+      subject,
+      text,
+      html
     };
 
     const info = await transporter.sendMail(mailOptions);
