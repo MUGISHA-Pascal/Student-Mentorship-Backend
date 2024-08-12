@@ -11,8 +11,6 @@ COPY . .
 
 RUN npm run prisma:generate
 
-RUN npm run build
-
 FROM node:lts-alpine as production
 
 COPY --from=development /usr/src/app/node_modules ./node_modules
