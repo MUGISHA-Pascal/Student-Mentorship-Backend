@@ -15,7 +15,6 @@ FROM node:lts-alpine as production
 
 COPY --from=development /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/package*.json ./
-COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/prisma ./prisma
 
 CMD [  "npm", "run", "start:prod" ]
