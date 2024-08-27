@@ -32,3 +32,22 @@ export const verifyToken = (req, res, next) => {
     next();
   });
 };
+
+export const checkAdmin = (req, res, next) => {
+  if (req.userRole !== 'ADMIN') {
+    return res.status(403).json({ error: 'Access denied. Admins only' });
+  }
+  next();
+};
+
+export const verifyAdmin = (req, res, next) => {
+  const { password } = req.body;
+  if (password !== "10//.") {
+    return res
+      .status(403)
+      .json({
+        message: "Invalid password"
+      });
+  }
+  next();
+};

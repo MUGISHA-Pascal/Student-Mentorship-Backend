@@ -1,13 +1,17 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "GOYA App API Documentation",
-    "version": "1.0.0",
-    "description": "API endpoints for registering users, logging in, and accessing user information."
+    "version": "2.0.0",
+    "title": "GOYA API DOCUMENTATION",
+    "description": "API endpoints for registering users, logging in, and accessing user information.",
+    "contact": {
+      "name": "API Support",
+      "email": "goyoungafrica@gmail.com"
+    }
   },
   "servers": [
     {
-      "url": "http://localhost:3000/api/v1"
+      "url": "https://api.goyoungafrica.org/api/v1"
     }
   ],
   "components": {
@@ -284,8 +288,185 @@
       }
     },
     "/user": {
+  "get": {
+    "summary": "Get user information",
+    "tags": [
+      "User"
+    ],
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "User retrieved successfully",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User retrieved successfully"
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "lastName": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "dob": {
+                      "type": "string"
+                    },
+                    "gender": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    },
+                    "career": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+},
+"/user/{id}": {
+  "delete": {
+    "summary": "Delete a user",
+    "tags": [
+      "User"
+    ],
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "ID of the user to delete",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "User deleted successfully",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User deleted successfully"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Unauthorized"
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "User not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "User not found"
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+},
+    "/user/users": {
       "get": {
-        "summary": "Get user information",
+        "summary": "Get all users",
         "tags": [
           "User"
         ],
@@ -296,7 +477,7 @@
         ],
         "responses": {
           "200": {
-            "description": "User retrieved successfully",
+            "description": "Users retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -304,31 +485,34 @@
                   "properties": {
                     "message": {
                       "type": "string",
-                      "example": "User retrieved successfully"
+                      "example": "Users retrieved successfully"
                     },
-                    "user": {
-                      "type": "object",
-                      "properties": {
-                        "firstName": {
-                          "type": "string"
-                        },
-                        "lastName": {
-                          "type": "string"
-                        },
-                        "email": {
-                          "type": "string"
-                        },
-                        "dob": {
-                          "type": "string"
-                        },
-                        "gender": {
-                          "type": "string"
-                        },
-                        "role": {
-                          "type": "string"
-                        },
-                        "career": {
-                          "type": "string"
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "dob": {
+                            "type": "string"
+                          },
+                          "gender": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "career": {
+                            "type": "string"
+                          }
                         }
                       }
                     }
