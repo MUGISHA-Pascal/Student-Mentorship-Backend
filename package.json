@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
+    "start:prod": "prisma migrate deploy && npm start",
     "dev": "nodemon index.js",
     "swagger-autogen": "node ./docs/swagger.js",
     "prisma:generate": "prisma generate",
