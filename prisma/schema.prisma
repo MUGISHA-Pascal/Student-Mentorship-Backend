@@ -21,10 +21,7 @@ model User {
   dob       String
   gender    String // 'male', 'female', 'other'
   password  String
-  role      Role
-  career    String?
 
-  // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -42,10 +39,17 @@ model OTP {
   @@map("otps")
 }
 
-// Define the enum for roles
-enum Role {
-  STUDENT
-  COACH
-  EMPLOYEE
-  ADMIN
+model ConsultancyRequest {
+  id       Int      @id @default(autoincrement())
+  name     String
+  email    String
+  phone    String
+  career   String
+  createdAt DateTime @default(now())
+}
+
+model EmailSubscription {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
 }

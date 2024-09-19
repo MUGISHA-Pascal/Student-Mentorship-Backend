@@ -7,6 +7,4 @@ export const userSchema = Joi.object({
   dob: Joi.string().required(),
   gender: Joi.string().valid('male', 'female', 'other'),
   password: Joi.string().min(8).required(),
-  role: Joi.string().valid('STUDENT', 'COACH', 'EMPLOYER', 'ADMIN').required(),
-  career: Joi.string().allow('', null), // Optional career field
 });

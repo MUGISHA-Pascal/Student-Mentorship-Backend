@@ -15,11 +15,10 @@ export const RegisterUser = async (req, res) => {
     return res.status(400).json({ error: error.details[0].message });
   }
 
-  const { firstName, lastName, email, dob, gender, password, role, career } =
+  const { firstName, lastName, email, dob, gender, password } =
     value;
 
   try {
-    // Hash the password before storing it
     const user = await prisma.user.findUnique({
       where: {
         email,
@@ -31,12 +30,16 @@ export const RegisterUser = async (req, res) => {
         .json({ message: "user already exist", user: null });
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // await sendEmail(
-    //   email,
-    //   "Welcome to GOYA!",
-    //   "Dear Client,\n\nCongratulations! You have successfully registered with GOYA (Go Young Africa). Your journey towards greatness begins here. You are now on our waitlist, and we will notify you as soon as possible. Meanwhile, please take a moment to fill out this form to help us better understand your needs and preferences:\n\n[Google Form Link](https://docs.google.com/forms/d/1tsRHt1fscAF7xPOG2WLJA6x8pIf2-3s_fAyARSCujuY)\n\nStay tuned for exciting updates!\n\nWarm regards,\nThe GOYA Team",
-    //   null
-    // );
+    const newUser = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        dob,
+        gender,
+        password: hashedPassword,
+      },
+    });
 
     const subject = 'Welcome to GOYA!';
     const htmlContent = emailTemplate();
@@ -47,19 +50,6 @@ export const RegisterUser = async (req, res) => {
       null,
       htmlContent
     );
-    // Create user using Prisma
-    const newUser = await prisma.user.create({
-      data: {
-        firstName,
-        lastName,
-        email,
-        dob,
-        gender,
-        password: hashedPassword,
-        role,
-        career,
-      },
-    });
 
     res
       .status(201)
@@ -69,8 +59,6 @@ export const RegisterUser = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
-// Login function
 
 export const loginUser = async (req, res) => {
   const { error, value } = loginSchema.validate(req.body);
@@ -82,7 +70,6 @@ export const loginUser = async (req, res) => {
   const { email, password } = value;
 
   try {
-    // Check if user exists
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -91,13 +78,10 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Check if password is correct
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
-
-    // Generate JWT token
     const token = generateToken(user);
 
     res

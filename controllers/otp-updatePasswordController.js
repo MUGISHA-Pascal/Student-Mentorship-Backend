@@ -89,7 +89,6 @@ export const validateAndVerifyOtp = async (req, res) => {
     });
     console.log(verified);
     if (verified) {
-      // Delete OTP record from the database after successful validation
       await prisma.oTP.delete({
         where: { id: otpRecord.id },
       });

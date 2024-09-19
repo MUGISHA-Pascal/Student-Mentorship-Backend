@@ -8,6 +8,7 @@ import { UserRouter } from "./routers/userRouter.js";
 import { authRouter } from "./routers/authRouter.js";
 import path from "path";
 import cors from "cors";
+import { subscriptionRouter } from "./routers/subscriptionRouter.js";
 
 dotenv.config();
 
@@ -19,21 +20,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan("dev"));
 
-// Swagger UI setup
 const swaggerJson = JSON.parse(
   fs.readFileSync(`${path.resolve()}/docs/swagger.json`)
 );
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerJson));
 
-
-
-// Auth routes
 app.use("/api/v1/auth", authRouter);
 
-//user routes
-app.use("/api/v1/user", UserRouter)
+app.use("/api/v1/user", UserRouter);
 
-// Error handling
+app.use("/api/v1/subscription", subscriptionRouter);
+
 app.use((req, res, next) => {
   next(httpErrors(404, "Not Found"));
 });
@@ -46,7 +43,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
