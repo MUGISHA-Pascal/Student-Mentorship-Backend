@@ -53,3 +53,45 @@ model EmailSubscription {
   email     String   @unique
   createdAt DateTime @default(now())
 }
+
+model Coach {
+  id          String      @id @default(uuid())
+  name        String
+  image       String?    
+  rating      Float    
+  courses     Course[]    @relation("CoachCourses") 
+  students    Student[]   @relation("CoachStudents") 
+  activities  Activity[]  
+}
+
+model Course {
+  id          String      @id @default(uuid())
+  name        String
+  coaches     Coach[]     @relation("CoachCourses") 
+  students    Student[]   @relation("CourseStudents") 
+}
+
+model Student {
+  id          String      @id @default(uuid())
+  name        String
+  courses     Course[]    @relation("CourseStudents") 
+  coaches     Coach[]     @relation("CoachStudents") 
+}
+
+model Activity {
+  id          String      @id @default(uuid())
+  name        String
+  date        DateTime
+  status      ActivityStatus
+  image       String?     
+  coach       Coach       @relation(fields: [coachId], references: [id])
+  coachId     String     
+   
+}
+
+enum ActivityStatus {
+  UPCOMING
+  ONGOING
+  DONE
+}
+
