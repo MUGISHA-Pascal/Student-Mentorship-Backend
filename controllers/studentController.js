@@ -1,0 +1,158 @@
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
+// 1. Retrieve a list of students (allow filtering and sorting by course)
+export const getStudentsList = async (req, res) => {
+    const { name, course } = req.query; // Extracting query parameters for filtering
+
+    try {
+        const students = await prisma.student.findMany({
+            where: {
+                name: name ? { contains: name } : undefined,  // Filter by name if provided
+                status: 'APPROVED',  // Only fetch approved students
+                courses: course ? { some: { name: { contains: course } } } : undefined  // Filter by course if provided
+            },
+            select: {
+                id: true,
+                name: true,
+                courses: {
+                    select: {
+                        name: true
+                    }
+                },
+                status: true
+            },
+            orderBy: {
+                name: 'asc'  
+            }
+        });
+
+        res.json(students);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// 2. Fetch student profile details
+export const getStudentProfile = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const student = await prisma.student.findUnique({
+            where: { id }, // Find student by ID
+            include: {
+                courses: true,  // Include enrolled courses
+                coaches: true,  // Include assigned coaches
+            }
+        });
+
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        res.json(student);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// 3. Retrieve students on the waitlist
+export const getWaitlist = async (req, res) => {
+    try {
+        const waitlistedStudents = await prisma.student.findMany({
+            where: { status: 'WAITLIST' },  // Fetch students with WAITLIST status
+            select: {
+                id: true,
+                name: true,
+                courses: {
+                    select: {
+                        name: true
+                    }
+                },
+                status: true
+            }
+        });
+
+        res.json(waitlistedStudents);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// 4. Approve a student on the waitlist
+export const approveWaitlistStudent = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const student = await prisma.student.update({
+            where: { id },
+            data: { status: 'APPROVED' },  // Update status to 'APPROVED'
+        });
+
+        res.json({ message: 'Student approved successfully', student });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// 5. Reject a student on the waitlist
+export const rejectWaitlistStudent = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const student = await prisma.student.update({
+            where: { id },
+            data: { status: 'REJECTED' },  // Update status to 'REJECTED'
+        });
+
+        res.json({ message: 'Student rejected successfully', student });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// 6. Send a message to a student
+export const sendMessageToStudent = async (req, res) => {
+    const { id } = req.params;
+    const { message } = req.body;
+
+    try {
+        const student = await prisma.student.findUnique({
+            where: { id }
+        });
+
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        // Assuming there's a 'messages' table to store messages
+        const newMessage = await prisma.message.create({
+            data: {
+                studentId: id,
+                content: message
+            }
+        });
+
+        res.json({ message: 'Message sent successfully', newMessage });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// 7. Remove a student from the system
+export const removeStudent = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deletedStudent = await prisma.student.delete({
+            where: { id }
+        });
+
+        res.json({ message: 'Student removed successfully', deletedStudent });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
