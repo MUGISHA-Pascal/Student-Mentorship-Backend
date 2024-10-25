@@ -76,6 +76,20 @@ model Student {
   name        String
   courses     Course[]    @relation("CourseStudents") 
   coaches     Coach[]     @relation("CoachStudents") 
+  status    Status   @default(WAITLIST)
+  messages  Message[]   @relation("StudentMessages")
+}
+enum Status {
+  WAITLIST
+  APPROVED
+  REJECTED
+}
+model Message {
+  id        String   @id @default(uuid())
+  studentId String
+  content   String
+  student   Student  @relation("StudentMessages", fields: [studentId], references: [id])
+
 }
 
 model Activity {
