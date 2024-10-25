@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ROLE } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { userSchema } from "../schemas/sign-up.js";
 import { generateToken } from "../middleware/auth.js";
@@ -15,7 +15,7 @@ export const RegisterUser = async (req, res) => {
     return res.status(400).json({ error: error.details[0].message });
   }
 
-  const { firstName, lastName, email, dob, gender, password } =
+  const { firstName, lastName, email, dob, gender, password, role } =
     value;
 
   try {
@@ -38,6 +38,7 @@ export const RegisterUser = async (req, res) => {
         dob,
         gender,
         password: hashedPassword,
+        role : ROLE[role.toUpperCase()],
       },
     });
 
