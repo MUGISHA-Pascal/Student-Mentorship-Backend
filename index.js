@@ -11,7 +11,7 @@ import cors from "cors";
 import { subscriptionRouter } from "./routers/subscriptionRouter.js";
 import { coachRouter } from './routers/coachRouter.js';
 import { studentRouter } from './routers/studentRouter.js';
-
+import { documentRouter } from './routers/documentRouter.js';
 
 dotenv.config();
 
@@ -36,6 +36,8 @@ app.use("/api/v1/subscription", subscriptionRouter);
 
 app.use('/api/coach', coachRouter); 
 app.use('/api/student', studentRouter);
+app.use('/api/document', documentRouter);
+
 
 
 app.use((req, res, next) => {
