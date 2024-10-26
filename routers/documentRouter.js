@@ -5,7 +5,7 @@ import {
     deleteDocument, 
     filterDocuments, 
     searchDocuments 
-} from '../controllers/documentController';
+} from '../controllers/documentController.js';
 import multer from 'multer';
 
 export const documentRouter = express.Router();
