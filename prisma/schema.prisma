@@ -64,52 +64,54 @@ model EmailSubscription {
 }
 
 model Coach {
-  id          String      @id @default(uuid())
-  name        String
-  image       String?    
-  rating      Float    
-  courses     Course[]    @relation("CoachCourses") 
-  students    Student[]   @relation("CoachStudents") 
-  activities  Activity[]  
+  id         String     @id @default(uuid())
+  name       String
+  image      String?
+  rating     Float
+  courses    Course[]   @relation("CoachCourses")
+  students   Student[]  @relation("CoachStudents")
+  activities Activity[]
+  documents  Document[] @relation("CoachDocuments")
 }
 
 model Course {
-  id          String      @id @default(uuid())
-  name        String
-  coaches     Coach[]     @relation("CoachCourses") 
-  students    Student[]   @relation("CourseStudents") 
+  id        String     @id @default(uuid())
+  name      String
+  coaches   Coach[]    @relation("CoachCourses")
+  students  Student[]  @relation("CourseStudents")
+  documents Document[] @relation("CourseDocuments")
 }
 
 model Student {
-  id          String      @id @default(uuid())
-  name        String
-  courses     Course[]    @relation("CourseStudents") 
-  coaches     Coach[]     @relation("CoachStudents") 
-  status    Status   @default(WAITLIST)
-  messages  Message[]   @relation("StudentMessages")
+  id       String    @id @default(uuid())
+  name     String
+  courses  Course[]  @relation("CourseStudents")
+  coaches  Coach[]   @relation("CoachStudents")
+  status   Status    @default(WAITLIST)
+  messages Message[] @relation("StudentMessages")
 }
+
 enum Status {
   WAITLIST
   APPROVED
   REJECTED
 }
+
 model Message {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   studentId String
   content   String
-  student   Student  @relation("StudentMessages", fields: [studentId], references: [id])
-
+  student   Student @relation("StudentMessages", fields: [studentId], references: [id])
 }
 
 model Activity {
-  id          String      @id @default(uuid())
-  name        String
-  date        DateTime
-  status      ActivityStatus
-  image       String?     
-  coach       Coach       @relation(fields: [coachId], references: [id])
-  coachId     String     
-   
+  id      String         @id @default(uuid())
+  name    String
+  date    DateTime
+  status  ActivityStatus
+  image   String?
+  coach   Coach          @relation(fields: [coachId], references: [id])
+  coachId String
 }
 
 enum ActivityStatus {
@@ -118,3 +120,15 @@ enum ActivityStatus {
   DONE
 }
 
+model Document {
+  id         String   @id @default(uuid())
+  coachId    String
+  courseId   String
+  fileName   String
+  fileType   String
+  fileSize   Int
+  uploadDate DateTime @default(now())
+  fileUrl    String
+  coach      Coach    @relation(fields: [coachId], references: [id], name: "CoachDocuments")
+  course     Course   @relation(fields: [courseId], references: [id], name: "CourseDocuments")
+}
