@@ -146,6 +146,12 @@ export const removeStudent = async (req, res) => {
     const { id } = req.params;
 
     try {
+        // Delete messages associated with the student first
+        await prisma.message.deleteMany({
+            where: { studentId: id }
+        });
+
+        // Then delete the student
         const deletedStudent = await prisma.student.delete({
             where: { id }
         });
@@ -156,3 +162,48 @@ export const removeStudent = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+// 8. Create a new student
+export const createStudent = async (req, res) => {
+    const { name, courses, coaches, status } = req.body;
+  
+    // Validate the input
+    if (!name) {
+      return res.status(400).json({ message: 'Name is required' });
+    }
+  
+    // Check if courses and coaches are arrays or set them to empty arrays if not
+    const courseConnections = Array.isArray(courses) ? 
+      courses.map(courseId => ({ id: courseId })) : [];
+    const coachConnections = Array.isArray(coaches) ? 
+      coaches.map(coachId => ({ id: coachId })) : [];
+  
+    try {
+      const newStudent = await prisma.student.create({
+        data: {
+          name,
+          status: status || 'WAITLIST', // Default to WAITLIST if no status is provided
+          courses: {
+            connect: courseConnections
+          },
+          coaches: {
+            connect: coachConnections
+          }
+        }
+      });
+  
+      // Return the created student without timestamps
+      const { createdAt, updatedAt, ...studentWithoutTimestamps } = newStudent;
+      res.status(201).json(studentWithoutTimestamps);
+    } catch (error) {
+      console.error("Error creating student:", error, { name, courses, coaches, status });
+      
+      if (error.code === 'P2003') {
+        return res.status(400).json({ message: 'Invalid course or coach ID' });
+      }
+      
+      // Handle other potential Prisma errors or unknown errors
+      res.status(500).json({ message: 'Failed to create student', error: error.message });
+    }
+  };
+  

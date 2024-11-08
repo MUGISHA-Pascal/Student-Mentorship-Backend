@@ -1,4 +1,4 @@
-import { PrismaClient, ROLE } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { userSchema } from "../schemas/sign-up.js";
 import { generateToken } from "../middleware/auth.js";

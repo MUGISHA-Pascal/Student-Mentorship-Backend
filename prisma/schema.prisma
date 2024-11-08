@@ -65,15 +65,21 @@ model EmailSubscription {
 
 model Coach {
   id         String     @id @default(uuid())
-  name       String
+  firstName       String
+  lastName        String
+  email           String @unique
+  bio             String?
   image      String?
-  rating     Float
+  ratings     Rating[]  @relation("CoachRatings")
   courses    Course[]   @relation("CoachCourses")
   students   Student[]  @relation("CoachStudents")
   activities Activity[]
   documents  Document[] @relation("CoachDocuments")
+  career     Career[]  @relation("CoachCareers")
+  workExperience WorkExperience[] 
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
-
 model Course {
   id        String     @id @default(uuid())
   name      String
@@ -86,9 +92,10 @@ model Student {
   id       String    @id @default(uuid())
   name     String
   courses  Course[]  @relation("CourseStudents")
-  coaches  Coach[]   @relation("CoachStudents")
+  coaches  Coach[]  @relation("CoachStudents")
   status   Status    @default(WAITLIST)
   messages Message[] @relation("StudentMessages")
+  ratings Rating[]  @relation("StudentRatings")
 }
 
 enum Status {
@@ -107,11 +114,12 @@ model Message {
 model Activity {
   id      String         @id @default(uuid())
   name    String
-  date    DateTime
+  createdAt    DateTime @default(now())
   status  ActivityStatus
   image   String?
   coach   Coach          @relation(fields: [coachId], references: [id])
   coachId String
+  date      DateTime     
 }
 
 enum ActivityStatus {
@@ -131,4 +139,31 @@ model Document {
   fileUrl    String
   coach      Coach    @relation(fields: [coachId], references: [id], name: "CoachDocuments")
   course     Course   @relation(fields: [courseId], references: [id], name: "CourseDocuments")
+}
+model Career {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  coaches     Coach[]  @relation("CoachCareers")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+model WorkExperience {
+  id         String   @id @default(uuid())
+  position   String
+  company    String
+  startDate  DateTime
+  endDate    DateTime?
+  coachId    String
+  coach      Coach    @relation(fields: [coachId], references: [id])
+  createdAt  DateTime @default(now())
+}
+model Rating {
+  id        Int     @id @default(autoincrement())
+  coachId   String  // The coach being rated
+  studentId String  // The student giving the rating
+  rating    Float   // Rating score (e.g., 1-5)
+  createdAt DateTime @default(now()) // When the rating was given
+  coach     Coach   @relation("CoachRatings", fields: [coachId], references: [id]) // Relation to Coach
+  student   Student  @relation("StudentRatings", fields: [studentId], references: [id]) // Corresponding relation
 }

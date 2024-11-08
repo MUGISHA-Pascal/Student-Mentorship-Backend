@@ -6,7 +6,8 @@ import {
     approveWaitlistStudent, 
     rejectWaitlistStudent, 
     sendMessageToStudent, 
-    removeStudent 
+    removeStudent,
+    createStudent 
 } from '../controllers/studentController.js';
 
 export const studentRouter = express.Router();
@@ -32,3 +33,5 @@ studentRouter.post('/students/:id/message', sendMessageToStudent);
 // 7. Remove a student from the system
 studentRouter.delete('/students/:id/remove', removeStudent);
 
+//8.Add a new student
+studentRouter.post('/students', createStudent);
