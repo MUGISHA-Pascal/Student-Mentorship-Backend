@@ -1,10 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { startOfWeek, endOfWeek, subWeeks } from 'date-fns'; // For handling week-based calculations
+import { jwtDecode } from 'jwt-decode';
+import dotenv from 'dotenv';
 const prisma = new PrismaClient();
 
 // 1. Fetch coach profile
 export const getCoachProfile = async (req, res) => {
     const { id } = req.params;  // Fix destructuring
+    // console.log(req.params.userId);
     try {
         const coach = await prisma.coach.findUnique({
             where: { id },
@@ -68,7 +71,7 @@ export const getCoachStatisticsAndPerformance = async (req, res) => {
         // Set date range to capture activity count for this week
         const startOfThisWeek = startOfWeek(new Date());
         const endOfThisWeek = endOfWeek(new Date());
-        
+
         // Count activities for this week
         const weeklyActivities = await prisma.activity.count({
             where: {
@@ -133,50 +136,50 @@ export const getCoachActivities = async (req, res) => {
 };
 // 4. Create a new activity for a coach
 export const createCoachActivity = async (req, res) => {
-  const { id } = req.params; // Extract the coachId from the URL
-  const { name, date, status, image } = req.body; // Extract data for activity from the request body
+    const { id } = req.params; // Extract the coachId from the URL
+    const { name, date, status, image } = req.body; // Extract data for activity from the request body
 
-  console.log('Coach ID:', id); // Log to check the extracted coachId
-  console.log('Activity Data:', req.body); // Log to check if the activity data is being passed
+    console.log('Coach ID:', id); // Log to check the extracted coachId
+    console.log('Activity Data:', req.body); // Log to check if the activity data is being passed
 
-  // Check if coachId and activity data are provided
-  if (!id) {
-    return res.status(400).json({ message: 'Coach ID is required' });
-  }
-
-  if (!name || !date || !status) {
-    return res.status(400).json({ message: 'Activity name, date, and status are required' });
-  }
-
-  try {
-    // Check if the coach with the provided ID exists
-    const coach = await prisma.coach.findUnique({
-      where: { id: id }, // Find the coach by the provided ID
-    });
-
-    if (!coach) {
-      return res.status(404).json({ message: 'Coach not found' });
+    // Check if coachId and activity data are provided
+    if (!id) {
+        return res.status(400).json({ message: 'Coach ID is required' });
     }
 
-    // Create the activity and associate it with the coach
-    const activity = await prisma.activity.create({
-      data: {
-        name,
-        date,
-        status,
-        image, // Image is optional, so no validation required
-        coach: {
-          connect: { id: id }, // Connect the activity to the coach using the coachId
-        },
-      },
-    });
+    if (!name || !date || !status) {
+        return res.status(400).json({ message: 'Activity name, date, and status are required' });
+    }
 
-    // Respond with the created activity
-    return res.status(201).json(activity);
-  } catch (error) {
-    console.error('Error creating activity:', error); // Log the error
-    return res.status(500).json({ message: 'Internal Server Error' });
-  }
+    try {
+        // Check if the coach with the provided ID exists
+        const coach = await prisma.coach.findUnique({
+            where: { id: id }, // Find the coach by the provided ID
+        });
+
+        if (!coach) {
+            return res.status(404).json({ message: 'Coach not found' });
+        }
+
+        // Create the activity and associate it with the coach
+        const activity = await prisma.activity.create({
+            data: {
+                name,
+                date,
+                status, //"UPCOMING", "ONGOING", "DONE"
+                image, // Image is optional, so no validation required
+                coach: {
+                    connect: { id: id }, // Connect the activity to the coach using the coachId
+                },
+            },
+        });
+
+        // Respond with the created activity
+        return res.status(201).json(activity);
+    } catch (error) {
+        console.error('Error creating activity:', error); // Log the error
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
 };
 
 
@@ -227,11 +230,15 @@ export const getRecentActivities = async (req, res) => {
             take: 10, // Limit to 10 activities
         });
 
+        // const activities = await prisma.activity.findMany({
+        //     where: { coachId: id },
+        // });
+
         const filteredActivities = activities.filter(
-            activity => activity.status === 'Upcoming' || activity.status === 'Ongoing'
+            activity => activity.status === 'UPCOMING' || activity.status === 'ONGOING'
         );
 
-        res.json(filteredActivities);
+        res.json(activities);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error' });
@@ -405,26 +412,35 @@ export const deleteWorkExperience = async (req, res) => {
         res.status(500).json({ message: 'Error deleting work experience' });
     }
 };
-//16. Fetch all coaches
+
+// 16. Fetch all coaches
 export const getCoachesList = async (req, res) => {
     const { firstName, lastName, course } = req.query; // Extracting query parameters for filtering
 
     try {
         const coaches = await prisma.coach.findMany({
             where: {
-                ...(firstName ? { firstName: { contains: firstName } } : {}), // Filter by first name if provided
-                ...(lastName ? { lastName: { contains: lastName } } : {}), // Filter by last name if provided
-                courses: course ? { some: { name: { contains: course } } } : undefined // Filter by course if provided
+                // Filtering based on first name
+                ...(firstName ? { user: { firstName: { contains: firstName, mode: 'insensitive' } } } : {}),
+                // Filtering based on last name
+                ...(lastName ? { user: { lastName: { contains: lastName, mode: 'insensitive' } } } : {}),
+                // Filtering by course name (if provided)
+                ...(course ? { courses: { some: { name: { contains: course, mode: 'insensitive' } } } } : {}),
             },
             select: {
                 id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
+                user: { // Select user info like first name, last name, email, etc.
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                    },
+                },
                 bio: true,
+                image: true,
                 ratings: {
                     select: {
-                      rating: true // Access the rating field from the Rating model
+                        rating: true // Access the rating field from the Rating model
                     }
                 },
                 courses: {
@@ -434,25 +450,26 @@ export const getCoachesList = async (req, res) => {
                 },
                 createdAt: true,
                 updatedAt: true,
-                image: true, 
                 students: true,
                 activities: true,
                 documents: true,
                 career: true,
                 workExperience: true,
-                _count: true
+                _count: true // Count related entities, like number of students, courses, etc.
             },
             orderBy: {
-                firstName: 'asc'  
+                user: { firstName: 'asc' },  // Ordering coaches by first name
             }
         });
 
+        // Return the list of coaches
         return res.json(coaches);
     } catch (error) {
         console.error('Error fetching coaches:', error);
         return res.status(500).json({ error: 'An error occurred while fetching coaches.' });
     }
 };
+
 // 17. Create a new coach
 export const createCoach = async (req, res) => {
     const { firstName, lastName, email, bio, image } = req.body; // Extract data from request body
@@ -479,16 +496,21 @@ export const createCoach = async (req, res) => {
 // 18. Update coach details
 export const updateCoach = async (req, res) => {
     const { id } = req.params;  // Get the coach ID from the route parameters
-    const { firstName, lastName, email, bio, image } = req.body;  // Get the updated details from the request body
+    const { bio, image } = req.body;
 
     try {
+        // Check if the coach exists before updating
+        const existingCoach = await prisma.coach.findUnique({
+            where: { id },
+        });
+
+        if (!existingCoach) {
+            return res.status(404).json({ message: "Coach not found" });
+        }
         // Update the coach in the database
         const updatedCoach = await prisma.coach.update({
             where: { id },
-            data: {
-                ...(firstName && { firstName }),  // Update first name if provided
-                ...(lastName && { lastName }),    // Update last name if provided
-                ...(email && { email }),          // Update email if provided
+            data: {         // Update email if provided
                 ...(bio && { bio }),              // Update bio if provided
                 ...(image && { image }),          // Update image if provided
             },
@@ -526,5 +548,70 @@ export const deleteCoach = async (req, res) => {
         } else {
             res.status(500).json({ message: 'Error deleting coach' });
         }
+    }
+};
+
+// 20. Get any table id from userId related to
+
+export const getEntityFromToken = async (req, res) => {
+    const token = req.headers['authorization']; // Assuming token is sent in the Authorization header
+
+    if (!token) {
+        return res.status(400).json({ message: 'Authorization token is missing' });
+    }
+
+    const { table, field } = req.query; // Extract table and field as query parameters
+
+    if (!table || !field) {
+        return res.status(400).json({ message: 'Table and field parameters are required' });
+    }
+
+    try {
+        // Inline decoding logic
+        let decodedToken;
+        try {
+            // decodedToken = jwt.verify(token, process.env.JWT_SECRET); // Replace 'your-secret-key' with your actual secret
+            decodedToken = jwtDecode(token);
+        } catch (error) {
+            console.error('Error decoding token:', error);
+            return res.status(400).json({ message: 'Invalid token' });
+}
+
+        if (!decodedToken || !decodedToken.id) {
+            return res.status(400).json({ message: 'Invalid token structure' });
+        }
+
+        const userId = decodedToken.id;
+
+        // Dynamically query the specified table
+        let result;
+        switch (table) {
+            case 'coach':
+                result = await prisma.coach.findUnique({
+                    where: { userId },
+                    select: { [field]: true },
+                });
+                break;
+
+            case 'student':
+                result = await prisma.student.findUnique({
+                    where: { userId },
+                    select: { [field]: true },
+                });
+                break;
+
+            // Add more cases for other tables as needed
+            default:
+                return res.status(400).json({ message: `Unsupported table: ${table}` });
+        }
+
+        if (!result) {
+            return res.status(404).json({ message: `${table} not found for this user` });
+        }
+
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error retrieving data' });
     }
 };

@@ -38,9 +38,27 @@ export const RegisterUser = async (req, res) => {
         dob,
         gender,
         password: hashedPassword,
-        role : ROLE[role.toUpperCase()],
+        role: role.toUpperCase(),
       },
     });
+
+    // Automatically create coach profile if role is COACH
+    let createdNewProfile = null;
+    if (role.toUpperCase() === "COACH") {
+      createdNewProfile = await prisma.coach.create({
+        data: {
+          userId: newUser.id, // Link the coach to the user
+          bio: null,  // Leave bio as null for later updates
+          image: null,  // Leave image as null for later updates
+        },
+      });
+    } else if (role.toUpperCase() === "STUDENT") {
+      createdNewProfile = await prisma.student.create({
+        data: {
+          userId: newUser.id, // Link the coach to the user
+        },
+      });
+    }
 
     const subject = 'Welcome to GOYA!';
     const htmlContent = emailTemplate();
@@ -54,7 +72,11 @@ export const RegisterUser = async (req, res) => {
 
     res
       .status(201)
-      .json({ message: "User created successfully", user: newUser });
+      .json({
+        message: "User created successfully",
+        user: newUser,
+        profile: createdNewProfile
+      });
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: "Internal server error" });

@@ -3,27 +3,38 @@ const prisma = new PrismaClient();
 
 // 1. Retrieve a list of students (allow filtering and sorting by course)
 export const getStudentsList = async (req, res) => {
-    const { name, course } = req.query; // Extracting query parameters for filtering
+    const { name, course } = req.query; // Extract query parameters for filtering
 
     try {
         const students = await prisma.student.findMany({
             where: {
-                name: name ? { contains: name } : undefined,  // Filter by name if provided
-                status: 'APPROVED',  // Only fetch approved students
-                courses: course ? { some: { name: { contains: course } } } : undefined  // Filter by course if provided
+                status: 'APPROVED', // Only fetch approved students
+                user: { 
+                    firstName: name ? { contains: name, mode: 'insensitive' } : undefined, // Filter by first name if provided
+                    lastName: name ? { contains: name, mode: 'insensitive' } : undefined // Filter by last name if provided
+                },
+                courses: course ? { some: { name: { contains: course, mode: 'insensitive' } } } : undefined // Filter by course if provided
             },
             select: {
                 id: true,
-                name: true,
-                courses: {
+                user: {
                     select: {
-                        name: true
+                        firstName: true,
+                        lastName: true,
+                        email: true // You can include other user fields here
                     }
                 },
-                status: true
+                status: true,
+                courses: {
+                    select: {
+                        name: true // Select the course name(s)
+                    }
+                }
             },
             orderBy: {
-                name: 'asc'  
+                user: {
+                    firstName: 'asc' // Sort by first name
+                }
             }
         });
 
@@ -63,7 +74,6 @@ export const getWaitlist = async (req, res) => {
             where: { status: 'WAITLIST' },  // Fetch students with WAITLIST status
             select: {
                 id: true,
-                name: true,
                 courses: {
                     select: {
                         name: true

@@ -34,9 +34,9 @@ app.use("/api/v1/user", UserRouter);
 
 app.use("/api/v1/subscription", subscriptionRouter);
 
-app.use('/api/coach', coachRouter); 
-app.use('/api/student', studentRouter);
-app.use('/api/document', documentRouter);
+app.use('/api/v1/coach', coachRouter); 
+app.use('/api/v1/student', studentRouter);
+app.use('/api/v1/document', documentRouter);
 
 
 
