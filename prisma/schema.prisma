@@ -22,6 +22,8 @@ model User {
   gender    String // 'male', 'female', 'other'
   password  String
   role      ROLE   @default(STUDENT)
+  sessions  SessionParticipant[]
+  messages  Message[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,7 +96,6 @@ model Student {
   courses  Course[]  @relation("CourseStudents")
   coaches  Coach[]  @relation("CoachStudents")
   status   Status    @default(WAITLIST)
-  messages Message[] @relation("StudentMessages")
   ratings Rating[]  @relation("StudentRatings")
 }
 
@@ -104,12 +105,6 @@ enum Status {
   REJECTED
 }
 
-model Message {
-  id        String  @id @default(uuid())
-  studentId String
-  content   String
-  student   Student @relation("StudentMessages", fields: [studentId], references: [id])
-}
 
 model Activity {
   id      String         @id @default(uuid())
@@ -166,4 +161,37 @@ model Rating {
   createdAt DateTime @default(now()) // When the rating was given
   coach     Coach   @relation("CoachRatings", fields: [coachId], references: [id]) // Relation to Coach
   student   Student  @relation("StudentRatings", fields: [studentId], references: [id]) // Corresponding relation
+}
+model Session {
+  id             String               @id @default(cuid())
+  title          String
+  startTime      DateTime
+  endTime        DateTime
+  status         SessionStatus @default(SCHEDULED)
+  participants   SessionParticipant[]
+  messages       Message[]
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  content    String
+  timestamp  DateTime @default(now())
+  senderId   String
+  sender     User     @relation(fields: [senderId], references: [id])
+  sessionId  String
+  session    Session  @relation(fields: [sessionId], references: [id])
+}
+
+model SessionParticipant {
+  id         String   @id @default(uuid())
+  userId     String
+  sessionId  String
+  user       User     @relation(fields: [userId], references: [id])
+  session    Session  @relation(fields: [sessionId], references: [id])
+}
+
+enum SessionStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
 }

@@ -12,6 +12,8 @@ import { subscriptionRouter } from "./routers/subscriptionRouter.js";
 import { coachRouter } from './routers/coachRouter.js';
 import { studentRouter } from './routers/studentRouter.js';
 import { documentRouter } from './routers/documentRouter.js';
+import {sessionRouter} from './routers/sessionRouter.js';
+import {messageRouter} from './routers/messageRouter.js';
 
 dotenv.config();
 
@@ -37,6 +39,8 @@ app.use("/api/v1/subscription", subscriptionRouter);
 app.use('/api/coach', coachRouter); 
 app.use('/api/student', studentRouter);
 app.use('/api/document', documentRouter);
+app.use('/api/session', sessionRouter);
+app.use('/api/message', messageRouter);
 
 
 
