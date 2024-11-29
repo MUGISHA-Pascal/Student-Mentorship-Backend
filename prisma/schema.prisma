@@ -13,6 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Blog {
+    id String @id @default(uuid())
+    title String
+    description String
+    writer String
+    dateCreated DateTime @default(now())
+    image String?
+}
+
+
 model User {
   id        String @id @default(uuid())
   firstName String
@@ -29,6 +39,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   studentId String?
+  
+  events Event[]
+  recentActivity RecentActivity[]
+  metting Meeting[]
 
   @@map("users")
 }
@@ -175,3 +189,42 @@ model Rating {
   coach     Coach    @relation("CoachRatings", fields: [coachId], references: [id]) // Relation to Coach
   student   Student  @relation("StudentRatings", fields: [studentId], references: [id]) // Corresponding relation
 }
+
+
+
+
+// I Muhammad Hasim contribution to the schema starts here
+// Event Schema
+model Event {
+  id        Int      @id @default(autoincrement())
+  title     String
+  date      DateTime
+  time      String
+  status    String // Available or unavailable
+  userId    String  // Should match the type of User.id
+  user      User    @relation(fields: [userId], references: [id]) // Correct relation
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// RecentActivities Schema
+model RecentActivity {
+  id Int @id @default(autoincrement())
+  userId  String
+  activity String
+  timestamp DateTime @default(now())
+  user  User @relation(fields: [userId], references: [id])
+}
+
+// Meeting Schema
+model Meeting {
+  id Int  @id @default(autoincrement())
+  userId  String
+  subject String
+  date  DateTime
+  time  String
+  status  String // "available", "unavailable"
+  user User   @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}
+// I Muhammad Hasim contribution ends here...
