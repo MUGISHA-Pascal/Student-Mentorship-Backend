@@ -1,79 +1,27 @@
-import { PrismaClient } from "@prisma/client";
+import { google } from 'googleapis';
+import { prisma } from '../utils/prismaClient';
 
-const prisma = new PrismaClient();
+export const scheduleSession = async (req, res) => {
+    const { startTime, endTime, summary } = req.body;
+    try {
+        const auth = new google.auth.OAuth2();
+        auth.setCredentials({ access_token: 'YOUR_ACCESS_TOKEN' });
 
-// Create a session
-export const createSession = async (req, res) => {
-  try {
-    const { title, startTime, endTime, participantIds } = req.body;
+        const event = {
+            summary,
+            start: { dateTime: startTime, timeZone: 'UTC' },
+            end: { dateTime: endTime, timeZone: 'UTC' },
+        };
 
-    const session = await prisma.session.create({
-      data: {
-        ...(title && { title }),
-        ...(startTime && { startTime: new Date(startTime) }),
-        ...(endTime && { endTime: new Date(endTime) }),
-        ...(participantIds && {
-          participants: {
-            create: participantIds.map((id) => ({ userId: id })),
-          },
-        }),
-      },
-    });
+        const response = await google.calendar('v3').events.insert({
+            auth,
+            calendarId: 'primary',
+            resource: event,
+        });
 
-    res.status(201).json({ message: 'Session created successfully', session });
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating session', error: error.message });
-  }
-};
-
-// Retrieve all sessions
-export const getSessions = async (req, res) => {
-  try {
-    const sessions = await prisma.session.findMany({
-      include: {
-        participants: true, // Adjust as needed for relational data
-      },
-    });
-
-    res.status(200).json({ message: 'Sessions retrieved successfully', sessions });
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching sessions', error: error.message });
-  }
-};
-
-// Update a session
-export const updateSession = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, startTime, endTime, status } = req.body;
-
-    const updatedSession = await prisma.session.update({
-      where: { id },
-      data: {
-        ...(title && { title }),
-        ...(startTime && { startTime: new Date(startTime) }),
-        ...(endTime && { endTime: new Date(endTime) }),
-        ...(status && { status }),
-      },
-    });
-
-    res.status(200).json({ message: 'Session updated successfully', updatedSession });
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating session', error: error.message });
-  }
-};
-
-// Delete a session
-export const deleteSession = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    await prisma.session.delete({
-      where: { id },
-    });
-
-    res.status(204).json({ message: 'Session deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error deleting session', error: error.message });
-  }
+        res.status(200).json(response.data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error scheduling session' });
+    }
 };
