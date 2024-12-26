@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000/api/v1"
+      "url": "https://api.goyoungafrica.org/api/v1"
     }
   ],
   "components": {
