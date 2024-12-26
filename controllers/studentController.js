@@ -610,11 +610,10 @@ export const getMentorCV = async (req, res) => {
                 Student Calender API
             */
 
-app.get('/event-schedule', async (req, res) => {
-  const userId = req.user.id; // Assumtion of authentication is made
-  if (!userId) {
-    return res.status(400).json({ status: 'error', message: 'User ID required' });
-  }
+// Fetch event schedule
+export const getEventSchedule = async (req, res) => {
+  const userId = req.user.id;
+
   try {
     const events = await prisma.event.findMany({
       where: { userId },
@@ -622,115 +621,105 @@ app.get('/event-schedule', async (req, res) => {
       orderBy: { date: 'asc' },
     });
     res.json({ status: 'success', data: events });
-  }catch (error) {
-    console.error('Error when fetching event shedule', error);
-    res.status(500).json({ error: error.message });
-}
-});
+  } catch (error) {
+    console.error('Error fetching event schedule:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
-app.get('/recent-activities', async (req, res) => {
+// Fetch recent activities
+// export const getRecentActivities = async (req, res) => {
+//   const userId = req.user.id;
+
+//   try {
+//     const activities = await prisma.recentActivities.findMany({
+//       where: { userId },
+//       select: { activity: true, timestamp: true },
+//       orderBy: { timestamp: 'desc' },
+//     });
+//     res.json({ message: 'Success', data: activities });
+//   } catch (error) {
+//     console.error('Error fetching recent activities:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+// Clear recent activities
+export const clearRecentActivities = async (req, res) => {
   const userId = req.user.id;
-  if (!userId) { 
-    return res.status(400).json({ status: 'error', message: 'User ID required' });
-  }
-  try {
-    const activities = await prisma.recentActivities.findMany({
-      where: { userId },
-      select: { activity: true, timestamp: true },
-      orderBy: { timestamp: 'desc' },
-    });
-    res.json({ message: 'Success', data: activities });
-  } catch (error) { 
-    console.error('Error while fetching recent activities', error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
-
-app.post('/clear-recent-activities', async (req, res) => {
-  const userId = req.user.id;
-  if (!userId) {
-    return res.status(400).json({ status: 'error', message: 'User ID required' });
-  }
   try {
     await prisma.recentActivities.deleteMany({ where: { userId } });
     res.json({ message: 'Success, activities cleared' });
   } catch (error) {
-    console.error('Error, when clearing recent activities', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error clearing recent activities:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
 
-app.get('/daily-meetings', async (req, res) => {
+// Fetch daily meetings
+export const getDailyMeetings = async (req, res) => {
   const userId = req.user.id;
-  if (!userId) { 
-    return res.status(400).json({ status: 'error', message: 'User ID required' });
-  }
+
   try {
-    const today = new Data();
+    const today = new Date();
     const meetings = await prisma.meeting.findMany({
       where: {
         userId,
-        data: { equals: today.toISOString().split('T')[0] },
+        date: { equals: today.toISOString().split('T')[0] },
       },
       select: { subject: true, time: true, status: true },
     });
     res.json({ message: 'Success', data: meetings });
-  } catch (error) { 
-    console.error('Error when getting daily metting', error);
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    console.error('Error fetching daily meetings:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
 
-
-app.post('/add-event-to-schedule', async (req, res) => {
+// Add an event to the schedule
+export const addEventToSchedule = async (req, res) => {
   const { title, date, time, userId, status } = req.body;
+
   try {
     const event = await prisma.event.create({
       data: { title, date, time, userId, status },
     });
     res.json({ message: 'Success', data: event });
   } catch (error) {
-    console.error('Error while adding an event', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error adding event to schedule:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
 
-app.get('/remove-event', async (req, res) => {
+// Remove an event
+export const removeEvent = async (req, res) => {
   const { eventId } = req.body;
-  if (!userId) {
-    return res.status(400).json({ status: 'error', message: 'User ID required' });
-  }
+
   try {
     await prisma.event.delete({
       where: { id: eventId },
     });
     res.json({ message: 'Event removed successfully' });
-  } catch (error) { 
-    console.error('Error during delete of event', error);
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    console.error('Error removing event:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
 
-app.get('/calender-view', async (req, res) => {
+// Fetch calendar view
+export const getCalendarView = async (req, res) => {
   const userId = req.user.id;
-  if (!userId) { 
-    return res.status(400).json({ status: 'error', message: 'User ID required' });
-  }
+
   try {
     const events = await prisma.event.findMany({
       where: { userId },
       select: { id: true, title: true, date: true, time: true, status: true },
       orderBy: { date: 'asc' },
     });
-    res.json({ message: 'success', data: events });
-  } catch (error) { 
-    console.error('Error fetching calender view', error);
-    res.status(500).json({ error: error.message });
+    res.json({ message: 'Success', data: events });
+  } catch (error) {
+    console.error('Error fetching calendar view:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
-
-/* End of Student Calender API */
-
-
-/*My contribution ends here Muhammad Hasim */
+};
