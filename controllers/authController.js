@@ -38,7 +38,7 @@ export const RegisterUser = async (req, res) => {
         dob,
         gender,
         password: hashedPassword,
-        role : ROLE[role.toUpperCase()],
+        role : ROLE[role.toUpperCase()] 
       },
     });
 
@@ -73,7 +73,7 @@ export const loginUser = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { email },
-    });
+    });    
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
@@ -94,6 +94,33 @@ export const loginUser = async (req, res) => {
       });
   } catch (error) {
     console.error("Error during login:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// API to handle webhook requests from JotForm
+export const jotformWebhook = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Find the user based on their email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update the `filledForm` field to true
+    await prisma.user.update({
+      where: { email },
+      data: { filledForm: true },
+    });
+
+    res.status(200).json({ message: "User's filledForm status updated" });
+  } catch (error) {
+    console.error("Error updating filledForm status:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

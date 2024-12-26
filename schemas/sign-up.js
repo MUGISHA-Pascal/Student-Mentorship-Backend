@@ -8,4 +8,6 @@ export const userSchema = Joi.object({
   gender: Joi.string().valid('male', 'female', 'other'),
   password: Joi.string().min(8).required(),
   role: Joi.string().valid('student', 'mentor', 'admin', 'employer', 'family').required(),
+  filledForm: Joi.boolean(),
+  approved: Joi.boolean()
 });
