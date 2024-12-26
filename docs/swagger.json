@@ -287,6 +287,73 @@
         }
       }
     },
+    "/auth/mentor/form": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Handle JotForm webhook requests",
+        "description": "Endpoint to process webhook requests from JotForm, update the user record, and return a response.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "description": "Webhook payload from JotForm",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "The email address of the user submitting the form."
+                }
+              },
+              "required": [
+                "email"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated the user's filledForm status.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User's filledForm status updated"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "summary": "Get user information",
@@ -2445,6 +2512,1516 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/student/students-list": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Retrieve a list of students",
+        "description": "Retrieve a list of students with the option to filter and sort by name and course.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "type": "string",
+            "description": "Filter students by name (first or last)."
+          },
+          {
+            "name": "course",
+            "in": "query",
+            "type": "string",
+            "description": "Filter students by course name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved students list.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "ID of the student."
+                  },
+                  "user": {
+                    "type": "object",
+                    "properties": {
+                      "firstName": {
+                        "type": "string",
+                        "description": "First name of the student."
+                      },
+                      "lastName": {
+                        "type": "string",
+                        "description": "Last name of the student."
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "Email of the student."
+                      }
+                    }
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Current status of the student."
+                  },
+                  "courses": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Name of the course."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/student-profile/{id}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Fetch student profile details",
+        "description": "Retrieve detailed profile information for a specific student by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the student."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved student profile.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "ID of the student."
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "firstName": {
+                      "type": "string",
+                      "description": "First name of the student."
+                    },
+                    "lastName": {
+                      "type": "string",
+                      "description": "Last name of the student."
+                    },
+                    "email": {
+                      "type": "string",
+                      "description": "Email of the student."
+                    }
+                  }
+                },
+                "courses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Course the student is enrolled in."
+                      }
+                    }
+                  }
+                },
+                "coaches": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Name of the assigned coach."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/waitlist": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Retrieve students on the waitlist",
+        "description": "Fetch students who are currently on the waitlist.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved waitlist students.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "ID of the student."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Current status of the student."
+                  },
+                  "courses": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Name of the course."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/waitlist/{id}/approve": {
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Approve a student on the waitlist",
+        "description": "Approve a student who is on the waitlist, changing their status to 'APPROVED'.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the student to approve."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully approved the student.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Status message indicating successful approval."
+                },
+                "student": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "ID of the approved student."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Updated status of the student."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/waitlist/{id}/reject": {
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Reject a student on the waitlist",
+        "description": "Reject a student from the waitlist, changing their status to 'REJECTED'.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the student to reject."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully rejected the student.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Status message indicating successful rejection."
+                },
+                "student": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "ID of the rejected student."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Updated status of the student."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/students/{id}/message": {
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Send a message to a student",
+        "description": "Send a message to a specific student by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the student."
+          },
+          {
+            "name": "message",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string",
+                  "description": "Message content to send to the student."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully sent the message.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Status message indicating the message was sent."
+                },
+                "newMessage": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "ID of the newly created message."
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "Content of the message."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/students/{id}/remove": {
+      "delete": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Remove a student from the system",
+        "description": "Delete a student from the system along with any associated messages.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the student to remove."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully removed the student.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Status message indicating successful removal."
+                },
+                "deletedStudent": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "ID of the removed student."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/students": {
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Create a new student",
+        "description": "Create a new student with provided details.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the student."
+                },
+                "courses": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "List of course IDs to connect the student with."
+                  }
+                },
+                "coaches": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "List of coach IDs to connect the student with."
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "description": "Status of the student (e.g., 'WAITLIST')."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successfully created a new student.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "ID of the created student."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to missing or invalid data."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/student-statistics/{id}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Get statistics for a specific student",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of the student",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Student statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "totalCourses": 5,
+                  "mentorRating": 4.2,
+                  "activities": 12,
+                  "medals": 3
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Student not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error fetching student statistics",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Error fetching student statistics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/performance-statistics/{studentId}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Get performance statistics for a specific student",
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the student",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Performance statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "courses": [
+                      {
+                        "id": "course1",
+                        "name": "Mathematics",
+                        "documents": [
+                          "document1",
+                          "document2"
+                        ]
+                      }
+                    ],
+                    "coaches": [
+                      {
+                        "name": "Coach A",
+                        "activities": [
+                          {
+                            "name": "Activity A",
+                            "date": "2024-12-30",
+                            "status": "DONE",
+                            "image": "image_url"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve performance data",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "message": "Failed to retrieve performance data."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/upcoming-events": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Retrieve all upcoming student events",
+        "responses": {
+          "200": {
+            "description": "Upcoming events retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "data": [
+                    {
+                      "id": "event1",
+                      "name": "Meeting with Coach",
+                      "date": "2024-12-30",
+                      "status": "UPCOMING",
+                      "coach": {
+                        "name": "Coach A"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve upcoming events",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "message": "Failed to retrieve upcoming events."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/recent-activities": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Get recent activities with images from the past week",
+        "responses": {
+          "200": {
+            "description": "Recent activities retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "data": [
+                    {
+                      "id": "activity1",
+                      "name": "Completed Project",
+                      "date": "2024-12-20",
+                      "image": "image_url",
+                      "coach": {
+                        "id": "coach1",
+                        "name": "Coach A"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve recent activities",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "message": "Failed to retrieve recent activities."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/available-courses": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Get all available course documents",
+        "responses": {
+          "200": {
+            "description": "Available course documents retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "data": [
+                    {
+                      "id": "document1",
+                      "name": "Course Document 1",
+                      "uploadDate": "2024-12-20",
+                      "coach": {
+                        "id": "coach1",
+                        "name": "Coach A"
+                      },
+                      "course": {
+                        "id": "course1",
+                        "name": "Mathematics"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve available course documents",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "message": "Failed to retrieve available course documents."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/mentor-profile/{coachId}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Get mentor (coach) profile details",
+        "parameters": [
+          {
+            "name": "coachId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the coach",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Mentor profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "name": "Coach A",
+                    "image": "image_url",
+                    "rating": 4.5
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Coach ID is required",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "message": "Coach ID required"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Mentor not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "message": "Mentor not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "message": "Internal Server Error."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/mentor-experience/{mentorId}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Get mentor (coach) work experience",
+        "parameters": [
+          {
+            "name": "mentorId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the mentor",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Mentor work experience retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "success",
+                  "data": [
+                    {
+                      "position": "Software Engineer",
+                      "company": "Tech Inc",
+                      "startDate": "2018-01-01",
+                      "endDate": "2020-01-01"
+                    },
+                    {
+                      "position": "Lead Mentor",
+                      "company": "Education Org",
+                      "startDate": "2020-01-01",
+                      "endDate": "Present"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Mentor ID is required",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "message": "Mentor ID required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Internal Server Error."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/mentor-courses/{coachId}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Retrieve the courses of a coach",
+        "parameters": [
+          {
+            "name": "coachId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the coach to fetch courses for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved coach's courses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "integer",
+                      "description": "Number of courses the coach is offering"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Coach ID is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Coach ID required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Coach not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Coach not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/mentor-rating/{coachId}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Retrieve the average rating of a coach",
+        "parameters": [
+          {
+            "name": "coachId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the coach to fetch ratings for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved coach's average rating",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "number",
+                      "description": "The average rating of the coach"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Coach ID is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Coach ID required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/mentor-review/{coachId}": {
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Submit a review for a coach",
+        "parameters": [
+          {
+            "name": "coachId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the coach to submit a review for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "studentId": {
+                    "type": "string",
+                    "description": "ID of the student submitting the review"
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "description": "Rating given by the student (1-5)"
+                  }
+                },
+                "required": [
+                  "studentId",
+                  "rating"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully submitted the review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Review submitted successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "The created review data"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Coach ID or rating is missing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Coach ID required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/mentor-reviews/{coachId}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Retrieve reviews for a mentor (coach)",
+        "description": "Get the reviews for a specific mentor (coach) using their coachId, with pagination options.",
+        "parameters": [
+          {
+            "name": "coachId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The ID of the mentor (coach)."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 1,
+            "description": "Page number for pagination (default: 1)."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 10,
+            "description": "Number of results per page (default: 10)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved mentor reviews.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "rating": {
+                    "type": "number",
+                    "description": "Rating given by the student."
+                  },
+                  "studentName": {
+                    "type": "string",
+                    "description": "Full name of the student who gave the review."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Coach ID required."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/mentor-cv/{mentorId}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Retrieve the CV of a mentor (coach)",
+        "description": "Download the CV of a mentor (coach) using their mentorId.",
+        "parameters": [
+          {
+            "name": "mentorId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The ID of the mentor (coach)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the mentor CV.",
+            "schema": {
+              "type": "file"
+            }
+          },
+          "400": {
+            "description": "Coach ID required."
+          },
+          "404": {
+            "description": "Coach CV not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/event-schedule": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Fetch event schedule for the student",
+        "description": "Get the schedule of events for the logged-in student.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved event schedule.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Title of the event."
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Date of the event."
+                  },
+                  "time": {
+                    "type": "string",
+                    "format": "time",
+                    "description": "Time of the event."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Status of the event (e.g., scheduled, completed)."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/clear-recent-activities": {
+      "delete": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Clear recent activities for the student",
+        "description": "Delete all recent activities for the logged-in student.",
+        "responses": {
+          "200": {
+            "description": "Successfully cleared recent activities."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/daily-meetings": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Fetch daily meetings for the student",
+        "description": "Retrieve all the meetings scheduled for today for the student.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved daily meetings.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "description": "Subject of the meeting."
+                  },
+                  "time": {
+                    "type": "string",
+                    "format": "time",
+                    "description": "Time of the meeting."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Status of the meeting (e.g., confirmed, pending)."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/add-event": {
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Add an event to the student's schedule",
+        "description": "Create a new event and add it to the student's calendar.",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "body",
+            "required": true,
+            "type": "string",
+            "description": "Title of the event."
+          },
+          {
+            "name": "date",
+            "in": "body",
+            "required": true,
+            "type": "string",
+            "format": "date",
+            "description": "Date of the event."
+          },
+          {
+            "name": "time",
+            "in": "body",
+            "required": true,
+            "type": "string",
+            "format": "time",
+            "description": "Time of the event."
+          },
+          {
+            "name": "userId",
+            "in": "body",
+            "required": true,
+            "type": "string",
+            "description": "ID of the user associated with the event."
+          },
+          {
+            "name": "status",
+            "in": "body",
+            "required": true,
+            "type": "string",
+            "description": "Status of the event (e.g., scheduled, canceled)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event successfully added to the schedule.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Status message."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "ID of the created event."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Title of the event."
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Date of the event."
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "time",
+                      "description": "Time of the event."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Status of the event."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/remove-event": {
+      "delete": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Remove an event from the student's schedule",
+        "description": "Delete an existing event from the student's calendar using the event ID.",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "body",
+            "required": true,
+            "type": "string",
+            "description": "ID of the event to be removed."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event successfully removed from the schedule."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/student/calendar-view": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Fetch the calendar view for the student",
+        "description": "Retrieve all the events in the student's calendar, ordered by date.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the calendar view.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "ID of the event."
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Title of the event."
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Date of the event."
+                  },
+                  "time": {
+                    "type": "string",
+                    "format": "time",
+                    "description": "Time of the event."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Status of the event."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error."
           }
         }
       }
