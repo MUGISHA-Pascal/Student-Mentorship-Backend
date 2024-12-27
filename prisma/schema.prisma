@@ -14,26 +14,26 @@ datasource db {
 }
 
 model Blog {
-    id String @id @default(uuid())
-    title String
-    description String
-    writer String
-    dateCreated DateTime @default(now())
-    image String?
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  writer      String
+  dateCreated DateTime @default(now())
+  image       String?
 }
 
-
 model User {
-  id         String  @id @default(uuid())
-  firstName  String
-  lastName   String
-  email      String  @unique
-  dob        String
-  gender     String // 'male', 'female', 'other'
-  password   String
-  role       ROLE    @default(STUDENT)
-  filledForm Boolean @default(false)
-  approved   Boolean @default(false)
+  id            String  @id @default(uuid())
+  firstName     String
+  lastName      String
+  email         String  @unique
+  dob           String
+  gender        String // 'male', 'female', 'other'
+  password      String
+  role          ROLE
+  filledForm    Boolean @default(false)
+  approved      Boolean @default(false)
+  filledProfile Boolean @default(false)
 
   coach   Coach?   @relation("UserCoach")
   student Student? @relation("UserStudent")
@@ -41,17 +41,17 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   studentId String?
-  
-  events Event[]
+
+  events         Event[]
   recentActivity RecentActivity[]
-  metting Meeting[]
+  metting        Meeting[]
 
   @@map("users")
 }
 
 enum ROLE {
   STUDENT
-  COACH
+  MENTOR
   ADMIN
   EMPLOYER
   FAMILY
@@ -192,9 +192,6 @@ model Rating {
   student   Student  @relation("StudentRatings", fields: [studentId], references: [id]) // Corresponding relation
 }
 
-
-
-
 // I Muhammad Hasim contribution to the schema starts here
 // Event Schema
 model Event {
@@ -203,30 +200,31 @@ model Event {
   date      DateTime
   time      String
   status    String // Available or unavailable
-  userId    String  // Should match the type of User.id
-  user      User    @relation(fields: [userId], references: [id]) // Correct relation
+  userId    String // Should match the type of User.id
+  user      User     @relation(fields: [userId], references: [id]) // Correct relation
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 // RecentActivities Schema
 model RecentActivity {
-  id Int @id @default(autoincrement())
-  userId  String
-  activity String
+  id        Int      @id @default(autoincrement())
+  userId    String
+  activity  String
   timestamp DateTime @default(now())
-  user  User @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 // Meeting Schema
 model Meeting {
-  id Int  @id @default(autoincrement())
-  userId  String
-  subject String
-  date  DateTime
-  time  String
-  status  String // "available", "unavailable"
-  user User   @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  userId    String
+  subject   String
+  date      DateTime
+  time      String
+  status    String // "available", "unavailable"
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
+
 // I Muhammad Hasim contribution ends here...

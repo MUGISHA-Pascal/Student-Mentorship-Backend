@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('STUDENT', 'COACH', 'EMPLOYEE', 'ADMIN');
+CREATE TYPE "Role" AS ENUM ('STUDENT', 'MENTOR', 'EMPLOYEE', 'ADMIN');
 
 -- CreateTable
 CREATE TABLE "User" (

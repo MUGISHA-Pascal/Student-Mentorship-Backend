@@ -12,6 +12,7 @@ import { subscriptionRouter } from "./routers/subscriptionRouter.js";
 import { coachRouter } from './routers/coachRouter.js';
 import { studentRouter } from './routers/studentRouter.js';
 import { documentRouter } from './routers/documentRouter.js';
+import { blogRouter } from "./routers/blogRouter.js";
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use("/api/v1/subscription", subscriptionRouter);
 app.use('/api/v1/coach', coachRouter); 
 app.use('/api/v1/student', studentRouter);
 app.use('/api/v1/document', documentRouter);
+app.use('/api/v1/blog', blogRouter)
 
 
 

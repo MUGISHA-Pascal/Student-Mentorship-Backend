@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ROLE } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { userSchema } from "../schemas/sign-up.js";
 import { generateToken } from "../middleware/auth.js";
@@ -38,13 +38,13 @@ export const RegisterUser = async (req, res) => {
         dob,
         gender,
         password: hashedPassword,
-        role : ROLE[role.toUpperCase()] 
+        role: ROLE[role.toUpperCase()]
       },
     });
 
-    // Automatically create coach profile if role is COACH
+    // Automatically create coach profile if role is MENTOR
     let createdNewProfile = null;
-    if (role.toUpperCase() === "COACH") {
+    if (role.toUpperCase() === "MENTOR") {
       createdNewProfile = await prisma.coach.create({
         data: {
           userId: newUser.id, // Link the coach to the user
@@ -95,7 +95,7 @@ export const loginUser = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { email },
-    });    
+    });
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
