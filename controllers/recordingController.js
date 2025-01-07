@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 export const startRecording = (req, res) => {
     const { sessionId, stream } = req.body;

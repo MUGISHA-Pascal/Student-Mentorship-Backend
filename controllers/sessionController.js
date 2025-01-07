@@ -1,11 +1,24 @@
 import { google } from 'googleapis';
-import { prisma } from '../utils/prismaClient';
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
+
+
+import { OAuth2Client } from 'google-auth-library';
+
+
+const oAuth2Client = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID,process.env.GOOGLE_CLIENT_SECRET,process.env.GOOGLE_REDIRECT_URI);
+
+
 
 export const scheduleSession = async (req, res) => {
     const { startTime, endTime, summary } = req.body;
     try {
-        const auth = new google.auth.OAuth2();
-        auth.setCredentials({ access_token: 'YOUR_ACCESS_TOKEN' });
+        oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+        
+        const accessToken = await oAuth2Client.getAccessToken();
 
         const event = {
             summary,
@@ -14,7 +27,7 @@ export const scheduleSession = async (req, res) => {
         };
 
         const response = await google.calendar('v3').events.insert({
-            auth,
+            auth: oauth2Client,
             calendarId: 'primary',
             resource: event,
         });
