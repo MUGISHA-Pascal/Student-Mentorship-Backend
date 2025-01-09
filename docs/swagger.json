@@ -2408,23 +2408,19 @@
         }
       }
     },
-    "/coach/get-entity": {
+    "/user/get-entity": {
       "get": {
         "tags": [
-          "coach"
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "summary": "Retrieve entity information using userId from token",
-        "description": "Retrieve a specific field from a table related to the userId extracted from the token.",
+        "description": "Retrieve all data from a table related to the userId extracted from the token. Requires a valid Bearer token in the Authorization header.",
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer token for authorization",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "table",
             "in": "query",
@@ -2433,20 +2429,11 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "field",
-            "in": "query",
-            "required": true,
-            "description": "The specific field to retrieve from the table.",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successfully retrieved the requested field from the specified table",
+            "description": "Successfully retrieved the requested data from the specified table",
             "content": {
               "application/json": {
                 "schema": {
@@ -2454,7 +2441,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "id": "12345"
+                  "id": "12345",
+                  "name": "John Doe",
+                  "email": "john.doe@example.com"
                 }
               }
             }
@@ -2471,7 +2460,43 @@
                     }
                   },
                   "example": {
-                    "message": "Table and field parameters are required"
+                    "message": "Table parameter is required"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized due to missing or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "error": "Token expired"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden due to missing Authorization header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "error": "No token provided"
                   }
                 }
               }

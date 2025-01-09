@@ -29,6 +29,8 @@ export const getCoachProfile = async (req, res) => {
 //2 Fetch and calculate statistics and performance
 export const getCoachStatisticsAndPerformance = async (req, res) => {
     const { id } = req.params;
+    console.log(id);
+    
     try {
         // Retrieve coach details, making sure to pull in related data like students, courses, activities, and ratings
         const coach = await prisma.coach.findUnique({
@@ -48,9 +50,9 @@ export const getCoachStatisticsAndPerformance = async (req, res) => {
         if (!coach) return res.status(404).json({ message: 'Coach not found' });
 
         // Count activities based on their status: completed, ongoing, and upcoming
-        const completedActivities = coach.activities?.filter(activity => activity.status === 'Done').length || 0;
-        const ongoingActivities = coach.activities?.filter(activity => activity.status === 'Ongoing').length || 0;
-        const upcomingActivities = coach.activities?.filter(activity => activity.status === 'Upcoming').length || 0;
+        const completedActivities = coach.activities?.filter(activity => activity.status === 'DONE').length || 0;
+        const ongoingActivities = coach.activities?.filter(activity => activity.status === 'ONGOING').length || 0;
+        const upcomingActivities = coach.activities?.filter(activity => activity.status === 'UPCOMING').length || 0;
 
         // Calculate the average rating given to the coach
         const ratings = coach.ratings || [];
@@ -548,70 +550,5 @@ export const deleteCoach = async (req, res) => {
         } else {
             res.status(500).json({ message: 'Error deleting coach' });
         }
-    }
-};
-
-// 20. Get any table id from userId related to
-
-export const getEntityFromToken = async (req, res) => {
-    const token = req.headers['authorization']; // Assuming token is sent in the Authorization header
-
-    if (!token) {
-        return res.status(400).json({ message: 'Authorization token is missing' });
-    }
-
-    const { table, field } = req.query; // Extract table and field as query parameters
-
-    if (!table || !field) {
-        return res.status(400).json({ message: 'Table and field parameters are required' });
-    }
-
-    try {
-        // Inline decoding logic
-        let decodedToken;
-        try {
-            // decodedToken = jwt.verify(token, process.env.JWT_SECRET); // Replace 'your-secret-key' with your actual secret
-            decodedToken = jwtDecode(token);
-        } catch (error) {
-            console.error('Error decoding token:', error);
-            return res.status(400).json({ message: 'Invalid token' });
-}
-
-        if (!decodedToken || !decodedToken.id) {
-            return res.status(400).json({ message: 'Invalid token structure' });
-        }
-
-        const userId = decodedToken.id;
-
-        // Dynamically query the specified table
-        let result;
-        switch (table) {
-            case 'coach':
-                result = await prisma.coach.findUnique({
-                    where: { userId },
-                    select: { [field]: true },
-                });
-                break;
-
-            case 'student':
-                result = await prisma.student.findUnique({
-                    where: { userId },
-                    select: { [field]: true },
-                });
-                break;
-
-            // Add more cases for other tables as needed
-            default:
-                return res.status(400).json({ message: `Unsupported table: ${table}` });
-        }
-
-        if (!result) {
-            return res.status(404).json({ message: `${table} not found for this user` });
-        }
-
-        res.json(result);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error retrieving data' });
     }
 };

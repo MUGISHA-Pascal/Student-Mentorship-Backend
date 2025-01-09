@@ -1,24 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-
-
-
-// ******************** I Muhammad Hasim my  My Contribution STARTS here ******************************
-      /********* Blog API *********************
-      *                                       *
-      *                                       *
-      *                                       *
-      *****************************************/
-      /* Everything from here until indicated is in the service of the
-                        Blog API
-      */
-      
-      
-//****** POST createBlog*********** */
 export const createBlog = async (req, res) => { 
-  // For the endpoint ---> /create-blog
-  const content = {title, description, writer, image} = req.body
+  const {title, description, writer, image} = req.body
   
   if (!title || !description || !writer) { 
     return res.status(400).json({ error: 'Missing required fields' });
@@ -42,15 +26,11 @@ export const createBlog = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 }
-//****** POST createBlo ENDS hereg*********** */
 
-
-//****** GET allAllBlogs*********** */
 export const getAllBlogs = async (req, res) => {
   const { sortBy = 'dateCreated', order = 'asc', page = 1, limit = 10 } = req.query;
   try {
-    const allBlogPosts = prisma.blog.findMany({
-      where,
+    const allBlogPosts = await prisma.blog.findMany({
       orderBy: { [sortBy]: order },
       skip: (page - 1) * limit,
       take: parseInt(limit,  10),
@@ -66,16 +46,13 @@ export const getAllBlogs = async (req, res) => {
     if (!allBlogPosts) {
       return res.status(400).json({ error: 'could not fetch a single blog' });
     }
-    const totalCount = await prisma.blog.count({ where });
+    const totalCount = await prisma.blog.count();
     res.status(200).json({ message: 'success', data: allBlogPosts });
   } catch (error) { 
     console.error('Error when fetching all posts', error.message);
   }
 }
-//****** POST createBlog ENDS here*********** */
 
-
-//****** GET getBlogById*********** */
 export const getBlogById = async (req, res) => { 
   const blogId = req.params.id
   if (!blogId) { 
@@ -94,33 +71,33 @@ export const getBlogById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 }
-//****** POST createBlog ENDS here*********** */
 
-
-//****** GET findBlogByTitleOrDescription*********** */
 export const findBlogByTitleOrDescription = async (req, res) => { 
-  const { keyword } = req.query
+  const { keyword } = req.query;
+  
   if (!keyword) { 
-    return res.status(401).json({ error: 'Missing query parameter or message' });
+    return res.status(400).json({ error: 'Missing query parameter: keyword' });
   }
+  
   try {
     const foundPosts = await prisma.blog.findMany({
       where: {
         OR: [
-          title ? { title: { contains: keyword, mode: 'insensitive' } } : undefined,
-          content ? { description: { contains: keyword, mode: 'insensitive' } } : undefined,
+          { title: { contains: keyword, mode: 'insensitive' } },
+          { description: { contains: keyword, mode: 'insensitive' } },
         ],
       },
       orderBy: { dateCreated: 'desc' },
     });
+
     if (foundPosts.length === 0) { 
-      return res.status(404).json({ Error: 'Post not found that match your search query' });
+      return res.status(404).json({ error: 'No posts found matching your search query' });
     }
+
     res.status(200).json({ message: 'success', data: foundPosts });
   } catch (error) { 
     console.error('Error fetching blogs', error);
-    res.status(500).json({error: error.message})
+    res.status(500).json({ error: error.message });
   }
-}
+};
 
-// ******************** My Contribution ENDS here ******************************

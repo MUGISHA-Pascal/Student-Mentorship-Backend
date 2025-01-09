@@ -18,8 +18,7 @@ import {
     updateWorkExperience,
     deleteWorkExperience ,
     getWorkExperience,
-    getCoachesList,
-    getEntityFromToken
+    getCoachesList
 } from '../controllers/coachController.js'; // Importing controller functions
 
 export const coachRouter = express.Router(); 
@@ -51,7 +50,4 @@ coachRouter.post('/:id/work-experience', addWorkExperience);  // Add work experi
 coachRouter.put('/:id/work-experience/:experienceId', updateWorkExperience); // Update work experience
 coachRouter.delete('/:id/work-experience/:experienceId', deleteWorkExperience); // Delete work experience
 coachRouter.get('/:id/work-experience/', getWorkExperience); // Fetch work experience
-
-// 7. Get userId from a certain table
-coachRouter.get('/get-entity', getEntityFromToken); // Get userId from a certain table
 
