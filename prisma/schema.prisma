@@ -37,6 +37,8 @@ model User {
 
   coach   Coach?   @relation("UserCoach")
   student Student? @relation("UserStudent")
+  sessions  SessionParticipant[]
+  messages  Message[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -115,7 +117,6 @@ model Student {
   courses  Course[]  @relation("CourseStudents")
   coaches  Coach[]   @relation("CoachStudents")
   status   Status    @default(WAITLIST)
-  messages Message[] @relation("StudentMessages")
   ratings  Rating[]  @relation("StudentRatings")
 }
 
@@ -125,12 +126,6 @@ enum Status {
   REJECTED
 }
 
-model Message {
-  id        String  @id @default(uuid())
-  studentId String
-  content   String
-  student   Student @relation("StudentMessages", fields: [studentId], references: [id])
-}
 
 model Activity {
   id        String         @id @default(uuid())
@@ -228,3 +223,36 @@ model Meeting {
 }
 
 // I Muhammad Hasim contribution ends here...
+model Session {
+  id             String               @id @default(cuid())
+  title          String
+  startTime      DateTime
+  endTime        DateTime
+  status         SessionStatus @default(SCHEDULED)
+  participants   SessionParticipant[]
+  messages       Message[]
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  content    String
+  timestamp  DateTime @default(now())
+  senderId   String
+  sender     User     @relation(fields: [senderId], references: [id])
+  sessionId  String
+  session    Session  @relation(fields: [sessionId], references: [id])
+}
+
+model SessionParticipant {
+  id         String   @id @default(uuid())
+  userId     String
+  sessionId  String
+  user       User     @relation(fields: [userId], references: [id])
+  session    Session  @relation(fields: [sessionId], references: [id])
+}
+
+enum SessionStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+}

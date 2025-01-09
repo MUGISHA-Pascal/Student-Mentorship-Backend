@@ -246,6 +246,7 @@ export const getRecentActivities = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 //8. creating a new career
 export const createCareer = async (req, res) => {
     const { id } = req.params;

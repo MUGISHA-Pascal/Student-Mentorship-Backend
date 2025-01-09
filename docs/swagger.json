@@ -2,11 +2,11 @@
   "openapi": "3.0.0",
   "info": {
     "version": "2.0.0",
-    "title": "GOYA API DOCUMENTATION",
-    "description": "API endpoints for registering users, logging in, and accessing user information.",
+    "title": "GOYA",
+    "description": "An API for managing a  certain user",
     "contact": {
       "name": "API Support",
-      "email": "goyoungafrica@gmail.com"
+      "email": "goya@gmail.com"
     }
   },
   "servers": [
@@ -542,6 +542,24 @@
             "bearerAuth": []
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Users retrieved successfully",
@@ -711,6 +729,7 @@
             "name": "otp",
             "in": "query",
             "required": true,
+            "description": "The table name to query (e.g., 'coach', 'student').",
             "schema": {
               "type": "string",
               "example": "642745"
