@@ -19,6 +19,7 @@ import {messageRouter} from './routers/messageRouter.js';
 import { initSocket } from './services/socketService.js';
 import { recordingRouter } from "./routers/recordingRouter.js";
 import {participantRouter} from './routers/participantRouter.js';
+import { videoCallRouter } from "./routers/videoCallRouter.js";
 
 
 dotenv.config();
@@ -58,6 +59,9 @@ app.use('/api/session', sessionRouter);
 app.use('/api/message', messageRouter);
 app.use('/api/recording', recordingRouter)
 app.use('/api/participant', participantRouter)
+
+
+app.use('/api/stream', videoCallRouter);
 
 
 

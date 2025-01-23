@@ -2,7 +2,7 @@ import express from 'express';
 import { 
     createCoach,
     deleteCoach,
-    updateCoach,
+    updateCoachProfile,
     getCoachProfile, 
     getCoachStatisticsAndPerformance, 
     getCoachActivities, 
@@ -18,7 +18,7 @@ import {
     updateWorkExperience,
     deleteWorkExperience ,
     getWorkExperience,
-    getCoachesList
+    getCoachesList,
 } from '../controllers/coachController.js'; // Importing controller functions
 
 export const coachRouter = express.Router(); 
@@ -27,7 +27,7 @@ export const coachRouter = express.Router();
 coachRouter.get('/profile/:id', getCoachProfile);
 coachRouter.get('/coaches', getCoachesList); // Fetch all coaches
 coachRouter.post('/coaches', createCoach); 
-coachRouter.put('/coaches/:id', updateCoach);
+coachRouter.put('/coaches/:id', updateCoachProfile);
 coachRouter.delete('/coaches/:id', deleteCoach);
 
 //2. Fetch coach statistics and performance
@@ -50,4 +50,3 @@ coachRouter.post('/:id/work-experience', addWorkExperience);  // Add work experi
 coachRouter.put('/:id/work-experience/:experienceId', updateWorkExperience); // Update work experience
 coachRouter.delete('/:id/work-experience/:experienceId', deleteWorkExperience); // Delete work experience
 coachRouter.get('/:id/work-experience/', getWorkExperience); // Fetch work experience
-

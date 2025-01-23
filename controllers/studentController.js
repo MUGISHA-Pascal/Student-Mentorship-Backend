@@ -723,3 +723,77 @@ export const getCalendarView = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// Fetch all available course categories
+export const getAvailableCareers = async (req, res) => {
+  try {
+      const careers = await prisma.career.findMany({
+          select: {
+              id: true,
+              title: true,
+              description: true,
+          },
+      });
+      res.json(careers);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// Fetch mentors based on career
+export const getMentorsByCareer = async (req, res) => {
+  const { careerId } = req.params;
+
+  try {
+    const mentors = await prisma.coach.findMany({
+      where: {
+        career: {
+          some: { id: careerId },
+        },
+      },
+      include: {
+        user: {
+          select: { firstName: true, lastName: true, email: true },
+        },
+        workExperience: true, // Include work experience
+      },
+    });
+
+    // Map mentors to include bio and image from scalar fields
+    const mentorsWithBioAndImage = mentors.map((mentor) => ({
+      ...mentor,
+      bio: mentor.bio,
+      image: mentor.image,
+    }));
+
+    if (!mentors.length) {
+      return res.status(404).json({ message: 'No mentors found for this career' });
+    }
+
+    res.json(mentorsWithBioAndImage);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const sendRequestToCoach = async (req, res) => {
+  const { studentId, coachId } = req.body;
+  try {
+      // Update student-coach relationship to WAITLIST
+      const student = await prisma.student.update({
+          where: { id: studentId },
+          data: {
+              coaches: {
+                  connect: { id: coachId },
+              },
+              status: 'WAITLIST',
+          },
+      });
+      res.json({ message: 'Request sent to the coach', student });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
+  }
+};

@@ -25,7 +25,10 @@ import {
     getCalendarView,
     removeEvent,
     addEventToSchedule,
-    getDailyMeetings
+    getDailyMeetings,
+    getAvailableCareers,
+    getMentorsByCareer,
+    sendRequestToCoach
 } from '../controllers/studentController.js';
 
 export const studentRouter = express.Router();
@@ -106,3 +109,11 @@ studentRouter.delete('/remove-event', removeEvent);
 
 // 25. Fetch the calendar view for the student
 studentRouter.get('/calendar-view', getCalendarView);
+// 26
+studentRouter.get('/careers', getAvailableCareers);
+
+// 27. Fetch mentors by career
+studentRouter.get('/careers/:careerId/mentors', getMentorsByCareer);
+
+// 28. Send a request to coach
+studentRouter.post('/request', sendRequestToCoach);

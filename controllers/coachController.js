@@ -29,8 +29,7 @@ export const getCoachProfile = async (req, res) => {
 //2 Fetch and calculate statistics and performance
 export const getCoachStatisticsAndPerformance = async (req, res) => {
     const { id } = req.params;
-    console.log(id);
-    
+
     try {
         // Retrieve coach details, making sure to pull in related data like students, courses, activities, and ratings
         const coach = await prisma.coach.findUnique({
@@ -496,41 +495,158 @@ export const createCoach = async (req, res) => {
         res.status(500).json({ message: 'Error creating coach' });
     }
 };
-// 18. Update coach details
-export const updateCoach = async (req, res) => {
-    const { id } = req.params;  // Get the coach ID from the route parameters
-    const { bio, image } = req.body;
+// // 18. Update coach details
+// export const updateCoachProfile = async (req, res) => {
+//     const { id } = req.params; // Extract coachId from params
+//     const { bio, image, careerIds, cv, workExperience } = req.body; // Extract body data
+
+//     try {
+//         // Validate if coachId is provided
+//         if (!id) {
+//             return res.status(400).json({ message: 'Coach ID is required' });
+//         }
+
+//         // Prepare update data object
+//         const updateData = {};
+
+//         if (bio !== undefined) {
+//             updateData.bio = bio;
+//         }
+
+//         if (image !== undefined) {
+//             updateData.image = image;
+//         }
+
+//         if (careerIds !== undefined) {
+//             updateData.career = {
+//                 set: { id: careerIds },
+//             };
+//         }
+
+//         if (cv !== undefined) {
+//             updateData.documents = {
+//                 create: {
+//                     fileName: cv.fileName,
+//                     fileType: cv.fileType,
+//                     fileSize: cv.fileSize,
+//                     fileUrl: cv.fileUrl,
+//                 },
+//             };
+//         }
+
+//         if (workExperience !== undefined) {
+//             updateData.workExperience = {
+//                 create: workExperience.map((exp) => ({
+//                     position: exp.position,
+//                     company: exp.company,
+//                     startDate: new Date(exp.startDate),
+//                     endDate: exp.endDate ? new Date(exp.endDate) : null,
+//                 })),
+//             };
+//         }
+
+//         // Perform the update
+//         const updatedCoach = await prisma.coach.update({
+//             where: { id: id }, // Ensure the ID is passed here
+//             data: updateData,
+//             include: {
+//                 career: true,
+//                 workExperience: true,
+//             },
+//         });
+
+//         res.status(200).json({
+//             message: 'Coach details updated successfully',
+//             coach: updatedCoach,
+//         });
+//     } catch (error) {
+//         console.error('Error updating coach details:', error);
+//         res.status(500).json({ message: 'Internal Server Error', error: error.message });
+//     }
+// };
+
+export const updateCoachProfile = async (req, res) => {
+    const { id } = req.params; // Extract coachId from params
+    const { bio, image, careerNames, cv, workExperience } = req.body; // Use careerNames instead of careerIds
 
     try {
-        // Check if the coach exists before updating
-        const existingCoach = await prisma.coach.findUnique({
-            where: { id },
-        });
-
-        if (!existingCoach) {
-            return res.status(404).json({ message: "Coach not found" });
+        // Validate if coachId is provided
+        if (!id) {
+            return res.status(400).json({ message: 'Coach ID is required' });
         }
-        // Update the coach in the database
+
+        const updateData = {};
+
+        if (bio !== undefined) {
+            updateData.bio = bio;
+        }
+
+        if (image !== undefined) {
+            updateData.image = image;
+        }
+
+        // Resolve career names to IDs
+        if (careerNames !== undefined) {
+            const careers = await prisma.career.findMany({
+                where: { title: { in: careerNames } },
+                select: { id: true },
+            });
+
+            if (careers.length !== careerNames.length) {
+                return res.status(400).json({
+                    message: 'Some careers not found. Please verify the names.',
+                });
+            }
+
+            updateData.career = {
+                set: careers.map((career) => ({ id: career.id })),
+            };
+        }
+
+        if (cv !== undefined) {
+            updateData.documents = {
+                create: {
+                    fileName: cv.fileName,
+                    fileType: cv.fileType,
+                    fileSize: cv.fileSize,
+                    fileUrl: cv.fileUrl,
+                },
+            };
+        }
+
+        if (workExperience !== undefined) {
+            updateData.workExperience = {
+                create: workExperience.map((exp) => ({
+                    position: exp.position,
+                    company: exp.company,
+                    startDate: new Date(exp.startDate),
+                    endDate: exp.endDate ? new Date(exp.endDate) : null,
+                })),
+            };
+        }
+
+        // Perform the update
         const updatedCoach = await prisma.coach.update({
-            where: { id },
-            data: {         // Update email if provided
-                ...(bio && { bio }),              // Update bio if provided
-                ...(image && { image }),          // Update image if provided
+            where: { id: id },
+            data: updateData,
+            include: {
+                career: true,
+                workExperience: true,
             },
         });
 
-        // Respond with the updated coach
-        res.json(updatedCoach);
+        res.status(200).json({
+            message: 'Coach details updated successfully',
+            coach: updatedCoach,
+        });
     } catch (error) {
-        console.error(error);
-        // Handle cases where the coach is not found
-        if (error.code === 'P2025') {
-            res.status(404).json({ message: 'Coach not found' });
-        } else {
-            res.status(500).json({ message: 'Error updating coach' });
-        }
+        console.error('Error updating coach details:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 };
+
+
+
 // 19. Delete a coach
 export const deleteCoach = async (req, res) => {
     const { id } = req.params;  // Get the coach ID from the route parameters

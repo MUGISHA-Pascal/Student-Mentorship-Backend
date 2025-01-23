@@ -105,6 +105,7 @@ model Coach {
 model Course {
   id        String     @id @default(uuid())
   name      String
+  description String?
   coaches   Coach[]    @relation("CoachCourses")
   students  Student[]  @relation("CourseStudents")
   documents Document[] @relation("CourseDocuments")
@@ -154,7 +155,7 @@ model Document {
   uploadDate DateTime @default(now())
   fileUrl    String
   coach      Coach    @relation(fields: [coachId], references: [id], name: "CoachDocuments")
-  course     Course   @relation(fields: [courseId], references: [id], name: "CourseDocuments")
+  course     Course   @relation(fields: [courseId], references: [id], name: "CourseDocuments", onDelete: Cascade)
 }
 
 model Career {
