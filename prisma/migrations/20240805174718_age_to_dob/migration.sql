@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "users" ALTER COLUMN "dob" SET DATA TYPE TEXT;

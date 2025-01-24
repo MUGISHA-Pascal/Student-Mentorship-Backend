@@ -1,37 +1,39 @@
 import express from 'express';
-import { 
+import {
     createCoach,
     deleteCoach,
     updateCoachProfile,
-    getCoachProfile, 
-    getCoachStatisticsAndPerformance, 
-    getCoachActivities, 
+    getCoachProfile,
+    getCoachStatisticsAndPerformance,
+    getCoachActivities,
     createCoachActivity,
     updateCoachActivity,
     deleteCoachActivity,
     getRecentActivities,
-    createCareer, 
+    createCareer,
     getCoachCareers,
     updateCareer,
     deleteCareer,
     addWorkExperience,
     updateWorkExperience,
-    deleteWorkExperience ,
+    deleteWorkExperience,
     getWorkExperience,
     getCoachesList,
 } from '../controllers/coachController.js'; // Importing controller functions
+import multer from 'multer';
 
-export const coachRouter = express.Router(); 
+export const coachRouter = express.Router();
+const upload = multer({ dest: 'uploads/' });
 
 // 1. Fetch coach details
 coachRouter.get('/profile/:id', getCoachProfile);
 coachRouter.get('/coaches', getCoachesList); // Fetch all coaches
-coachRouter.post('/coaches', createCoach); 
-coachRouter.put('/coaches/:id', updateCoachProfile);
+coachRouter.post('/coaches', createCoach);
+coachRouter.put('/coaches/:id', upload.fields([{ name: 'image' }, { name: 'cv' }]), updateCoachProfile);
 coachRouter.delete('/coaches/:id', deleteCoach);
 
 //2. Fetch coach statistics and performance
-coachRouter.get('/:id/statistics', getCoachStatisticsAndPerformance);  
+coachRouter.get('/:id/statistics', getCoachStatisticsAndPerformance);
 
 // 4. Fetch activities
 coachRouter.get('/:id/activity', getCoachActivities);

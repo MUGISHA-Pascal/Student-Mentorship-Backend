@@ -567,57 +567,65 @@ export const createCoach = async (req, res) => {
 
 export const updateCoachProfile = async (req, res) => {
     const { id } = req.params; // Extract coachId from params
-    const { bio, image, careerNames, cv, workExperience } = req.body; // Use careerNames instead of careerIds
+    const bio = req.body.bio;
+    const careerName = req.body.career;
+    const workExperience = JSON.parse(req.body.workExperience || '[]');
+
+    const imageFile = req.files?.image?.[0];
+    const cvFile = req.files?.cv?.[0];
+
 
     try {
-        // Validate if coachId is provided
         if (!id) {
             return res.status(400).json({ message: 'Coach ID is required' });
         }
 
         const updateData = {};
 
-        if (bio !== undefined) {
+        if (bio) {
             updateData.bio = bio;
         }
 
-        if (image !== undefined) {
-            updateData.image = image;
+        if (imageFile) {
+            updateData.image = imageFile.filename;
         }
 
-        // Resolve career names to IDs
-        if (careerNames !== undefined) {
-            const careers = await prisma.career.findMany({
-                where: { title: { in: careerNames } },
-                select: { id: true },
-            });
-
-            if (careers.length !== careerNames.length) {
-                return res.status(400).json({
-                    message: 'Some careers not found. Please verify the names.',
-                });
-            }
-
-            updateData.career = {
-                set: careers.map((career) => ({ id: career.id })),
-            };
-        }
-
-        if (cv !== undefined) {
-            updateData.documents = {
+        if (cvFile) {
+            updateData.cv = {
                 create: {
-                    fileName: cv.fileName,
-                    fileType: cv.fileType,
-                    fileSize: cv.fileSize,
-                    fileUrl: cv.fileUrl,
+                    fileName: cvFile.filename,
+                    fileType: cvFile.mimetype,
+                    fileSize: cvFile.size,
+                    fileUrl: `/upload/${cvFile.filename}`,
                 },
             };
         }
 
-        if (workExperience !== undefined) {
+        // Check or add the career
+        if (careerName) {
+            let career = await prisma.career.findUnique({
+                where: { title: careerName },
+            });
+
+            if (!career) {
+                career = await prisma.career.create({
+                    data: {
+                        title: careerName,
+                        description: `Default description for ${careerName}`,
+                    },
+                });
+            }
+
+            updateData.career = {
+                connect: { id: career.id },
+            };
+        }
+
+        // Update work experience if provided
+        if (workExperience.length > 0) {
             updateData.workExperience = {
                 create: workExperience.map((exp) => ({
-                    position: exp.position,
+                    position: exp.career,
                     company: exp.company,
                     startDate: new Date(exp.startDate),
                     endDate: exp.endDate ? new Date(exp.endDate) : null,
@@ -625,13 +633,21 @@ export const updateCoachProfile = async (req, res) => {
             };
         }
 
-        // Perform the update
+
+        // Perform the database update
         const updatedCoach = await prisma.coach.update({
-            where: { id: id },
+            where: { userId: id },
             data: updateData,
             include: {
                 career: true,
                 workExperience: true,
+            },
+        });
+
+        await prisma.user.update({
+            where: { id }, // Use the same `id` since it maps to `userId`
+            data: {
+                filledProfile: true,
             },
         });
 

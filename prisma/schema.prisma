@@ -97,6 +97,7 @@ model Coach {
   activities     Activity[]
   documents      Document[]       @relation("CoachDocuments")
   career         Career[]         @relation("CoachCareers")
+  cv             CoachCV          [] @relation("CoachDocuments")
   workExperience WorkExperience[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -145,6 +146,18 @@ enum ActivityStatus {
   DONE
 }
 
+
+model CoachCV {
+  id         String   @id @default(uuid())
+  coachId    String
+  fileName   String
+  fileType   String
+  fileSize   Int
+  uploadDate DateTime @default(now())
+  fileUrl    String
+  coach      Coach    @relation(fields: [coachId], references: [id], name: "CoachDocuments")
+}
+
 model Document {
   id         String   @id @default(uuid())
   coachId    String
@@ -160,7 +173,7 @@ model Document {
 
 model Career {
   id          String   @id @default(uuid())
-  title       String
+  title       String   @unique
   description String
   coaches     Coach[]  @relation("CoachCareers")
   createdAt   DateTime @default(now())
