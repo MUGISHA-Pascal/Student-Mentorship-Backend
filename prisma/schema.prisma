@@ -43,7 +43,6 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  studentId String?
 
   events         Event[]
   recentActivity RecentActivity[]
