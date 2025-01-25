@@ -123,6 +123,9 @@ model Course {
 model Student {
   id      String   @id @default(uuid())
   userId  String   @unique // Foreign key to User
+  bio     String?
+  educationLevel    String?
+  image   String?
   user    User     @relation("UserStudent", fields: [userId], references: [id])
   courses Course[] @relation("CourseStudents")
   coaches Coach[]  @relation("CoachStudents")

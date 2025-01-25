@@ -28,10 +28,15 @@ import {
     getDailyMeetings,
     getAvailableCareers,
     getMentorsByCareer,
-    sendRequestToCoach
+    sendRequestToCoach,
+    updateStudentProfile
 } from '../controllers/studentController.js';
+import multer from 'multer';
+
 
 export const studentRouter = express.Router();
+const upload = multer({ dest: 'uploads/' });
+
 
 // 1. Retrieve a list of students
 studentRouter.get('/students-list', getStudentsList);
@@ -117,3 +122,7 @@ studentRouter.get('/careers/mentors/:id', getMentorsByCareer);
 
 // 28. Send a request to coach
 studentRouter.put('/sendRequest', sendRequestToCoach);
+
+//29. Update the student profile
+studentRouter.put('/update/:userId', upload.fields([{ name: 'image' }]), updateStudentProfile);
+

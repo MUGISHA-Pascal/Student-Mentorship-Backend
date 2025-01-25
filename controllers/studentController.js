@@ -815,6 +815,62 @@ export const getMentorsByCareer = async (req, res) => {
   }
 };
 
+export const updateStudentProfile = async (req, res) => {
+  const { userId } = req.params;
+  const { bio, educationLevel } = req.body;
+  const imageFile = req.files?.image?.[0];
+
+  if (!userId) {
+    return res.status(400).json({ status: 'error', message: 'Student ID is required' });
+  }
+
+  try {
+    const updateData = {};
+
+    // Add bio if provided
+    if (bio) {
+      updateData.bio = bio;
+    }
+
+    // Add education level if provided
+    if (educationLevel) {
+      updateData.educationLevel = educationLevel;
+    }
+
+    // Handle image file if uploaded
+    if (imageFile) {
+      updateData.image = imageFile.filename;
+    }
+
+    // Perform the database update
+    const updatedStudent = await prisma.student.update({
+      where: { userId: userId },
+      data: updateData,
+    });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        filledProfile: true,
+      },
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Student profile updated successfully',
+      data: updatedStudent,
+    });
+  } catch (error) {
+    console.error('Error updating student profile:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'An error occurred while updating the student profile',
+      error: error.message,
+    });
+  }
+};
+
+
 
 export const sendRequestToCoach = async (req, res) => {
   const { studentId, coachId } = req.body;
