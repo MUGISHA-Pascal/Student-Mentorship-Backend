@@ -820,32 +820,40 @@ export const sendRequestToCoach = async (req, res) => {
   const { studentId, coachId } = req.body;
 
   try {
+    console.log("Student ID (userId):", studentId);
+    console.log("Coach ID:", coachId);
+
     // Check if coach exists
     const coachExists = await prisma.coach.findUnique({ where: { id: coachId } });
     if (!coachExists) {
-      return res.status(404).json({ message: 'Coach not found' });
+      return res.status(404).json({ message: "Coach not found" });
     }
 
-    // Check if student exists
-    const studentExists = await prisma.student.findUnique({ where: { id: studentId } });
-    if (!studentExists) {
-      return res.status(404).json({ message: 'Student not found' });
+    // Fetch the primary key (id) for the student using userId
+    const studentRecord = await prisma.student.findUnique({
+      where: { userId: studentId }, // Use userId to find the record
+    });
+
+    if (!studentRecord) {
+      return res.status(404).json({ message: "Student not found" });
     }
 
-    // Update student-coach relationship to WAITLIST
+    const primaryKey = studentRecord.id;
+
+    // Update the student-coach relationship to WAITLIST
     const student = await prisma.student.update({
-      where: { id: studentId },
+      where: { id: primaryKey }, // Use primary key
       data: {
         coaches: {
           connect: { id: coachId },
         },
-        status: 'WAITLIST',
+        status: "WAITLIST",
       },
     });
 
-    res.json({ message: 'Request sent to the coach', student });
+    res.json({ message: "Request sent to the coach", student });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
