@@ -35,10 +35,11 @@ model User {
   approved      Boolean @default(false)
   filledProfile Boolean @default(false)
 
-  coach   Coach?   @relation("UserCoach")
-  student Student? @relation("UserStudent")
-  sessions  SessionParticipant[]
-  messages  Message[]
+  coach    Coach?               @relation("UserCoach")
+  student  Student?             @relation("UserStudent")
+  admin    Admin?               @relation("UserAdmin")
+  sessions SessionParticipant[]
+  messages Message[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,29 +98,37 @@ model Coach {
   activities     Activity[]
   documents      Document[]       @relation("CoachDocuments")
   career         Career[]         @relation("CoachCareers")
-  cv             CoachCV          [] @relation("CoachDocuments")
+  cv             CoachCV[]        @relation("CoachDocuments")
   workExperience WorkExperience[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }
 
+model Admin {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation("UserAdmin", fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Course {
-  id        String     @id @default(uuid())
-  name      String
+  id          String     @id @default(uuid())
+  name        String
   description String?
-  coaches   Coach[]    @relation("CoachCourses")
-  students  Student[]  @relation("CourseStudents")
-  documents Document[] @relation("CourseDocuments")
+  coaches     Coach[]    @relation("CoachCourses")
+  students    Student[]  @relation("CourseStudents")
+  documents   Document[] @relation("CourseDocuments")
 }
 
 model Student {
-  id       String    @id @default(uuid())
-  userId   String    @unique // Foreign key to User
-  user     User      @relation("UserStudent", fields: [userId], references: [id])
-  courses  Course[]  @relation("CourseStudents")
-  coaches  Coach[]   @relation("CoachStudents")
-  status   Status    @default(WAITLIST)
-  ratings  Rating[]  @relation("StudentRatings")
+  id      String   @id @default(uuid())
+  userId  String   @unique // Foreign key to User
+  user    User     @relation("UserStudent", fields: [userId], references: [id])
+  courses Course[] @relation("CourseStudents")
+  coaches Coach[]  @relation("CoachStudents")
+  status  Status   @default(WAITLIST)
+  ratings Rating[] @relation("StudentRatings")
 }
 
 enum Status {
@@ -127,7 +136,6 @@ enum Status {
   APPROVED
   REJECTED
 }
-
 
 model Activity {
   id        String         @id @default(uuid())
@@ -145,7 +153,6 @@ enum ActivityStatus {
   ONGOING
   DONE
 }
-
 
 model CoachCV {
   id         String   @id @default(uuid())
@@ -238,31 +245,31 @@ model Meeting {
 
 // I Muhammad Hasim contribution ends here...
 model Session {
-  id             String               @id @default(cuid())
-  title          String
-  startTime      DateTime
-  endTime        DateTime
-  status         SessionStatus @default(SCHEDULED)
-  participants   SessionParticipant[]
-  messages       Message[]
+  id           String               @id @default(cuid())
+  title        String
+  startTime    DateTime
+  endTime      DateTime
+  status       SessionStatus        @default(SCHEDULED)
+  participants SessionParticipant[]
+  messages     Message[]
 }
 
 model Message {
-  id         String   @id @default(uuid())
-  content    String
-  timestamp  DateTime @default(now())
-  senderId   String
-  sender     User     @relation(fields: [senderId], references: [id])
-  sessionId  String
-  session    Session  @relation(fields: [sessionId], references: [id])
+  id        String   @id @default(uuid())
+  content   String
+  timestamp DateTime @default(now())
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id])
 }
 
 model SessionParticipant {
-  id         String   @id @default(uuid())
-  userId     String
-  sessionId  String
-  user       User     @relation(fields: [userId], references: [id])
-  session    Session  @relation(fields: [sessionId], references: [id])
+  id        String  @id @default(uuid())
+  userId    String
+  sessionId String
+  user      User    @relation(fields: [userId], references: [id])
+  session   Session @relation(fields: [sessionId], references: [id])
 }
 
 enum SessionStatus {

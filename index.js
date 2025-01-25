@@ -20,6 +20,7 @@ import { initSocket } from './services/socketService.js';
 import { recordingRouter } from "./routers/recordingRouter.js";
 import {participantRouter} from './routers/participantRouter.js';
 import { videoCallRouter } from "./routers/videoCallRouter.js";
+import { adminRouter } from "./routers/adminRouter.js";
 
 
 dotenv.config();
@@ -53,6 +54,7 @@ app.use("/api/v1/subscription", subscriptionRouter);
 
 app.use('/api/v1/coach', coachRouter); 
 app.use('/api/v1/student', studentRouter);
+app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/document', documentRouter);
 app.use('/api/v1/blog', blogRouter)
 app.use('/api/session', sessionRouter);

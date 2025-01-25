@@ -742,14 +742,59 @@ export const getAvailableCareers = async (req, res) => {
 };
 
 // Fetch mentors based on career
+// export const getMentorsByCareer = async (req, res) => {
+//   const { career } = req.body;
+
+//   try {
+//     const mentors = await prisma.coach.findMany({
+//       where: {
+//         career: {
+//           some: { id: careerId },
+//         },
+//       },
+//       include: {
+//         user: {
+//           select: { firstName: true, lastName: true, email: true },
+//         },
+//         workExperience: true, // Include work experience
+//       },
+//     });
+
+//     // Map mentors to include bio and image from scalar fields
+//     const mentorsWithBioAndImage = mentors.map((mentor) => ({
+//       ...mentor,
+//       bio: mentor.bio,
+//       image: mentor.image,
+//     }));
+
+//     if (!mentors.length) {
+//       return res.status(404).json({ message: 'No mentors found for this career' });
+//     }
+
+//     res.json(mentorsWithBioAndImage);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// };
+
 export const getMentorsByCareer = async (req, res) => {
-  const { careerId } = req.params;
+  const { title } = req.body;
+
+  if(!title) {
+    return res.status(400).json({status: 'error', message: 'No title provided'})
+  }
 
   try {
     const mentors = await prisma.coach.findMany({
       where: {
         career: {
-          some: { id: careerId },
+          some: {
+            title: {
+              equals: title,
+              mode: "insensitive", // Case-insensitive match
+            },
+          },
         },
       },
       include: {
@@ -778,9 +823,43 @@ export const getMentorsByCareer = async (req, res) => {
   }
 };
 
+
+// export const sendRequestToCoach = async (req, res) => {
+//   const { studentId, coachId } = req.body;
+//   try {
+//       // Update student-coach relationship to WAITLIST
+//       const student = await prisma.student.update({
+//           where: { id: studentId },
+//           data: {
+//               coaches: {
+//                   connect: { id: coachId },
+//               },
+//               status: 'WAITLIST',
+//           },
+//       });
+//       res.json({ message: 'Request sent to the coach', student });
+//   } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// };
+
 export const sendRequestToCoach = async (req, res) => {
   const { studentId, coachId } = req.body;
+
   try {
+      // Check if coach exists
+      const coachExists = await prisma.coach.findUnique({ where: { id: coachId } });
+      if (!coachExists) {
+          return res.status(404).json({ message: 'Coach not found' });
+      }
+
+      // Check if student exists
+      const studentExists = await prisma.student.findUnique({ where: { id: studentId } });
+      if (!studentExists) {
+          return res.status(404).json({ message: 'Student not found' });
+      }
+
       // Update student-coach relationship to WAITLIST
       const student = await prisma.student.update({
           where: { id: studentId },
@@ -791,6 +870,7 @@ export const sendRequestToCoach = async (req, res) => {
               status: 'WAITLIST',
           },
       });
+
       res.json({ message: 'Request sent to the coach', student });
   } catch (error) {
       console.error(error);

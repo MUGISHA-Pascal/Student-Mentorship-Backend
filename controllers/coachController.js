@@ -6,8 +6,7 @@ const prisma = new PrismaClient();
 
 // 1. Fetch coach profile
 export const getCoachProfile = async (req, res) => {
-    const { id } = req.params;  // Fix destructuring
-    // console.log(req.params.userId);
+    const { id } = req.params;
     try {
         const coach = await prisma.coach.findUnique({
             where: { id },
@@ -495,76 +494,7 @@ export const createCoach = async (req, res) => {
         res.status(500).json({ message: 'Error creating coach' });
     }
 };
-// // 18. Update coach details
-// export const updateCoachProfile = async (req, res) => {
-//     const { id } = req.params; // Extract coachId from params
-//     const { bio, image, careerIds, cv, workExperience } = req.body; // Extract body data
-
-//     try {
-//         // Validate if coachId is provided
-//         if (!id) {
-//             return res.status(400).json({ message: 'Coach ID is required' });
-//         }
-
-//         // Prepare update data object
-//         const updateData = {};
-
-//         if (bio !== undefined) {
-//             updateData.bio = bio;
-//         }
-
-//         if (image !== undefined) {
-//             updateData.image = image;
-//         }
-
-//         if (careerIds !== undefined) {
-//             updateData.career = {
-//                 set: { id: careerIds },
-//             };
-//         }
-
-//         if (cv !== undefined) {
-//             updateData.documents = {
-//                 create: {
-//                     fileName: cv.fileName,
-//                     fileType: cv.fileType,
-//                     fileSize: cv.fileSize,
-//                     fileUrl: cv.fileUrl,
-//                 },
-//             };
-//         }
-
-//         if (workExperience !== undefined) {
-//             updateData.workExperience = {
-//                 create: workExperience.map((exp) => ({
-//                     position: exp.position,
-//                     company: exp.company,
-//                     startDate: new Date(exp.startDate),
-//                     endDate: exp.endDate ? new Date(exp.endDate) : null,
-//                 })),
-//             };
-//         }
-
-//         // Perform the update
-//         const updatedCoach = await prisma.coach.update({
-//             where: { id: id }, // Ensure the ID is passed here
-//             data: updateData,
-//             include: {
-//                 career: true,
-//                 workExperience: true,
-//             },
-//         });
-
-//         res.status(200).json({
-//             message: 'Coach details updated successfully',
-//             coach: updatedCoach,
-//         });
-//     } catch (error) {
-//         console.error('Error updating coach details:', error);
-//         res.status(500).json({ message: 'Internal Server Error', error: error.message });
-//     }
-// };
-
+// 18. Update coach details
 export const updateCoachProfile = async (req, res) => {
     const { id } = req.params; // Extract coachId from params
     const bio = req.body.bio;
@@ -662,6 +592,22 @@ export const updateCoachProfile = async (req, res) => {
 };
 
 
+// export const updateFilledForm = async (req, res) => {
+//     const { id } = req.params;
+//     try {
+//         await prisma.user.update({
+//             where: { id },
+//             data: {
+//                 filledForm: true,
+//             },
+//         });
+//     } catch (error) {
+//         onsole.error('Error updating coach details:', error);
+//         res.status(500).json({ message: 'Internal Server Error', error: error.message });
+//     }
+// }
+
+
 
 // 19. Delete a coach
 export const deleteCoach = async (req, res) => {
@@ -683,5 +629,103 @@ export const deleteCoach = async (req, res) => {
         } else {
             res.status(500).json({ message: 'Error deleting coach' });
         }
+    }
+};
+
+
+export const getWaitlistForCoach = async (req, res) => {
+    const { coachId } = req.params; // Assume coachId is passed as a route parameter
+
+    try {
+        // Verify the coach exists
+        const coachExists = await prisma.coach.findUnique({
+            where: { id: coachId },
+        });
+
+        if (!coachExists) {
+            return res.status(404).json({ message: 'Coach not found' });
+        }
+
+        // Fetch students in the WAITLIST for the coach
+        const waitlistStudents = await prisma.student.findMany({
+            where: {
+                coaches: {
+                    some: { id: coachId }, // Ensure the student has the coach relationship
+                },
+                status: 'WAITLIST', // Ensure the student is in the WAITLIST
+            },
+            include: {
+                user: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+
+        // If no students are found, return an appropriate response
+        if (!waitlistStudents.length) {
+            return res.status(404).json({ message: 'No students found in the waitlist for this coach' });
+        }
+
+        res.json(waitlistStudents);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+
+export const updateStudentStatus = async (req, res) => {
+    const { coachId } = req.params; // Coach ID from route params
+    const { studentId, status } = req.body; // Student ID and status from request body
+
+    // Valid statuses for the operation
+    const validStatuses = ['APPROVED', 'REJECTED'];
+
+    // Check if the status provided is valid
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Invalid status. Use APPROVED or REJECTED.' });
+    }
+
+    try {
+        // Verify the coach exists
+        const coachExists = await prisma.coach.findUnique({
+            where: { id: coachId },
+        });
+
+        if (!coachExists) {
+            return res.status(404).json({ message: 'Coach not found' });
+        }
+
+        // Verify the student exists and is associated with the coach
+        const studentExists = await prisma.student.findFirst({
+            where: {
+                id: studentId,
+                coaches: {
+                    some: { id: coachId }, // Ensure the student is connected to the coach
+                },
+            },
+        });
+
+        if (!studentExists) {
+            return res.status(404).json({ message: 'Student not found or not associated with this coach' });
+        }
+
+        // Update the student's status
+        const updatedStudent = await prisma.student.update({
+            where: { id: studentId },
+            data: { status },
+        });
+
+        res.json({
+            message: `Student has been successfully ${status.toLowerCase()}.`,
+            student: updatedStudent,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };

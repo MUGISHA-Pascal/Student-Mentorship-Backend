@@ -10,4 +10,4 @@ authRouter.post("/register", RegisterUser);
 authRouter.post("/login", loginUser);
 
 
-authRouter.post("/form", jotformWebhook);
+authRouter.put("/form", jotformWebhook);

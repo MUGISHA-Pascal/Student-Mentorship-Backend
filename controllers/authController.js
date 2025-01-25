@@ -58,6 +58,12 @@ export const RegisterUser = async (req, res) => {
           userId: newUser.id, // Link the coach to the user
         },
       });
+    } else if (role.toUpperCase() === "ADMIN") {
+      createdNewProfile = await prisma.admin.create({
+        data: {
+          userId: newUser.id, // Link the admin to the user
+        },
+      });
     }
 
     const subject = 'Welcome to GOYA!';
