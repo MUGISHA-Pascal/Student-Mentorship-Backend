@@ -113,7 +113,7 @@ studentRouter.get('/calendar-view', getCalendarView);
 studentRouter.get('/careers', getAvailableCareers);
 
 // 27. Fetch mentors by career
-studentRouter.get('/careers/mentors', getMentorsByCareer);
+studentRouter.get('/careers/mentors/:id', getMentorsByCareer);
 
 // 28. Send a request to coach
 studentRouter.put('/sendRequest', sendRequestToCoach);

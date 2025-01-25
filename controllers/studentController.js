@@ -3,234 +3,234 @@ const prisma = new PrismaClient();
 
 // 1. Retrieve a list of students (allow filtering and sorting by course)
 export const getStudentsList = async (req, res) => {
-    const { name, course } = req.query; // Extract query parameters for filtering
+  const { name, course } = req.query; // Extract query parameters for filtering
 
-    try {
-        const students = await prisma.student.findMany({
-            where: {
-                status: 'APPROVED', // Only fetch approved students
-                user: { 
-                    firstName: name ? { contains: name, mode: 'insensitive' } : undefined, // Filter by first name if provided
-                    lastName: name ? { contains: name, mode: 'insensitive' } : undefined // Filter by last name if provided
-                },
-                courses: course ? { some: { name: { contains: course, mode: 'insensitive' } } } : undefined // Filter by course if provided
-            },
-            select: {
-                id: true,
-                user: {
-                    select: {
-                        firstName: true,
-                        lastName: true,
-                        email: true // You can include other user fields here
-                    }
-                },
-                status: true,
-                courses: {
-                    select: {
-                        name: true // Select the course name(s)
-                    }
-                }
-            },
-            orderBy: {
-                user: {
-                    firstName: 'asc' // Sort by first name
-                }
-            }
-        });
+  try {
+    const students = await prisma.student.findMany({
+      where: {
+        status: 'APPROVED', // Only fetch approved students
+        user: {
+          firstName: name ? { contains: name, mode: 'insensitive' } : undefined, // Filter by first name if provided
+          lastName: name ? { contains: name, mode: 'insensitive' } : undefined // Filter by last name if provided
+        },
+        courses: course ? { some: { name: { contains: course, mode: 'insensitive' } } } : undefined // Filter by course if provided
+      },
+      select: {
+        id: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true // You can include other user fields here
+          }
+        },
+        status: true,
+        courses: {
+          select: {
+            name: true // Select the course name(s)
+          }
+        }
+      },
+      orderBy: {
+        user: {
+          firstName: 'asc' // Sort by first name
+        }
+      }
+    });
 
-        res.json(students);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    res.json(students);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
 // 2. Fetch student profile details
 export const getStudentProfile = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        const student = await prisma.student.findUnique({
-            where: { id }, // Find student by ID
-            include: {
-                courses: true,  // Include enrolled courses
-                coaches: true,  // Include assigned coaches
-            }
-        });
+  try {
+    const student = await prisma.student.findUnique({
+      where: { id }, // Find student by ID
+      include: {
+        courses: true,  // Include enrolled courses
+        coaches: true,  // Include assigned coaches
+      }
+    });
 
-        if (!student) return res.status(404).json({ message: 'Student not found' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
 
-        res.json(student);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    res.json(student);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
 // 3. Retrieve students on the waitlist
 export const getWaitlist = async (req, res) => {
-    try {
-        const waitlistedStudents = await prisma.student.findMany({
-            where: { status: 'WAITLIST' },  // Fetch students with WAITLIST status
-            select: {
-                id: true,
-                courses: {
-                    select: {
-                        name: true
-                    }
-                },
-                status: true
-            }
-        });
+  try {
+    const waitlistedStudents = await prisma.student.findMany({
+      where: { status: 'WAITLIST' },  // Fetch students with WAITLIST status
+      select: {
+        id: true,
+        courses: {
+          select: {
+            name: true
+          }
+        },
+        status: true
+      }
+    });
 
-        res.json(waitlistedStudents);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    res.json(waitlistedStudents);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
 // 4. Approve a student on the waitlist
 export const approveWaitlistStudent = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        const student = await prisma.student.update({
-            where: { id },
-            data: { status: 'APPROVED' },  // Update status to 'APPROVED'
-        });
+  try {
+    const student = await prisma.student.update({
+      where: { id },
+      data: { status: 'APPROVED' },  // Update status to 'APPROVED'
+    });
 
-        res.json({ message: 'Student approved successfully', student });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    res.json({ message: 'Student approved successfully', student });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
 // 5. Reject a student on the waitlist
 export const rejectWaitlistStudent = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        const student = await prisma.student.update({
-            where: { id },
-            data: { status: 'REJECTED' },  // Update status to 'REJECTED'
-        });
+  try {
+    const student = await prisma.student.update({
+      where: { id },
+      data: { status: 'REJECTED' },  // Update status to 'REJECTED'
+    });
 
-        res.json({ message: 'Student rejected successfully', student });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    res.json({ message: 'Student rejected successfully', student });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
 // 6. Send a message to a student
 export const sendMessageToStudent = async (req, res) => {
-    const { id } = req.params;
-    const { message } = req.body;
+  const { id } = req.params;
+  const { message } = req.body;
 
-    try {
-        const student = await prisma.student.findUnique({
-            where: { id }
-        });
+  try {
+    const student = await prisma.student.findUnique({
+      where: { id }
+    });
 
-        if (!student) return res.status(404).json({ message: 'Student not found' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
 
-        // Assuming there's a 'messages' table to store messages
-        const newMessage = await prisma.message.create({
-            data: {
-                studentId: id,
-                content: message
-            }
-        });
+    // Assuming there's a 'messages' table to store messages
+    const newMessage = await prisma.message.create({
+      data: {
+        studentId: id,
+        content: message
+      }
+    });
 
-        res.json({ message: 'Message sent successfully', newMessage });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    res.json({ message: 'Message sent successfully', newMessage });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
 // 7. Remove a student from the system
 export const removeStudent = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        // Delete messages associated with the student first
-        await prisma.message.deleteMany({
-            where: { studentId: id }
-        });
+  try {
+    // Delete messages associated with the student first
+    await prisma.message.deleteMany({
+      where: { studentId: id }
+    });
 
-        // Then delete the student
-        const deletedStudent = await prisma.student.delete({
-            where: { id }
-        });
+    // Then delete the student
+    const deletedStudent = await prisma.student.delete({
+      where: { id }
+    });
 
-        res.json({ message: 'Student removed successfully', deletedStudent });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    res.json({ message: 'Student removed successfully', deletedStudent });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
 // 8. Create a new student
 export const createStudent = async (req, res) => {
-    const { name, courses, coaches, status } = req.body;
-  
-    // Validate the input
-    if (!name) {
-      return res.status(400).json({ message: 'Name is required' });
-    }
-  
-    // Check if courses and coaches are arrays or set them to empty arrays if not
-    const courseConnections = Array.isArray(courses) ? 
-      courses.map(courseId => ({ id: courseId })) : [];
-    const coachConnections = Array.isArray(coaches) ? 
-      coaches.map(coachId => ({ id: coachId })) : [];
-  
-    try {
-      const newStudent = await prisma.student.create({
-        data: {
-          name,
-          status: status || 'WAITLIST', // Default to WAITLIST if no status is provided
-          courses: {
-            connect: courseConnections
-          },
-          coaches: {
-            connect: coachConnections
-          }
+  const { name, courses, coaches, status } = req.body;
+
+  // Validate the input
+  if (!name) {
+    return res.status(400).json({ message: 'Name is required' });
+  }
+
+  // Check if courses and coaches are arrays or set them to empty arrays if not
+  const courseConnections = Array.isArray(courses) ?
+    courses.map(courseId => ({ id: courseId })) : [];
+  const coachConnections = Array.isArray(coaches) ?
+    coaches.map(coachId => ({ id: coachId })) : [];
+
+  try {
+    const newStudent = await prisma.student.create({
+      data: {
+        name,
+        status: status || 'WAITLIST', // Default to WAITLIST if no status is provided
+        courses: {
+          connect: courseConnections
+        },
+        coaches: {
+          connect: coachConnections
         }
-      });
-  
-      // Return the created student without timestamps
-      const { createdAt, updatedAt, ...studentWithoutTimestamps } = newStudent;
-      res.status(201).json(studentWithoutTimestamps);
-    } catch (error) {
-      console.error("Error creating student:", error, { name, courses, coaches, status });
-      
-      if (error.code === 'P2003') {
-        return res.status(400).json({ message: 'Invalid course or coach ID' });
       }
-      
-      // Handle other potential Prisma errors or unknown errors
-      res.status(500).json({ message: 'Failed to create student', error: error.message });
+    });
+
+    // Return the created student without timestamps
+    const { createdAt, updatedAt, ...studentWithoutTimestamps } = newStudent;
+    res.status(201).json(studentWithoutTimestamps);
+  } catch (error) {
+    console.error("Error creating student:", error, { name, courses, coaches, status });
+
+    if (error.code === 'P2003') {
+      return res.status(400).json({ message: 'Invalid course or coach ID' });
     }
-  };
+
+    // Handle other potential Prisma errors or unknown errors
+    res.status(500).json({ message: 'Failed to create student', error: error.message });
+  }
+};
 
 
 
 //* My contribution starts here Muhammad Hasim */
-            
-            
-            /********* Student Home API *************
-            *                                       *
-            *                                       *
-            *                                       *
-            *****************************************/
-            
-            /** What follows until indicated other wise serves as he service for the
-                Student Home API
-            */
+
+
+/********* Student Home API *************
+*                                       *
+*                                       *
+*                                       *
+*****************************************/
+
+/** What follows until indicated other wise serves as he service for the
+    Student Home API
+*/
 export const getStudentStatistics = async (req, res) => {
   const { id } = req.params;
   try {
@@ -422,15 +422,15 @@ export const getAvailableCourses = async (req, res) => {
 };
 /** End of Student Home API */
 
-            
-            /********* Student Mentor API *************
-            *                                       *
-            *                                       *
-            *                                       *
-            *****************************************/
-            /* Everything from here until indicated is the service for the
-                Student Mentor(Coach) API
-            */
+
+/********* Student Mentor API *************
+*                                       *
+*                                       *
+*                                       *
+*****************************************/
+/* Everything from here until indicated is the service for the
+    Student Mentor(Coach) API
+*/
 
 export const getCoachProfile = async (req, res) => {
   //  /mentor-profile/:mentorId --> EndPoint
@@ -453,12 +453,12 @@ export const getCoachProfile = async (req, res) => {
     res.json({ status: 'success', data: coachProfile });
   } catch (error) {
     console.error('Error fetching coach profile', error);
-    return res.status(500).json({ status: 'error', message: 'Internal Server Error.'});
+    return res.status(500).json({ status: 'error', message: 'Internal Server Error.' });
   }
 }
-  
 
-export const getCoachExperience = async (req, res) => { 
+
+export const getCoachExperience = async (req, res) => {
   /* The Exp in this case stands for --> Experience */
   //   /mentor-experience/:mentorId --> EndPoint
   const { mentorId } = req.params;
@@ -471,13 +471,13 @@ export const getCoachExperience = async (req, res) => {
       orderBy: { startDate: 'asc' }
     });
     res.json({ message: 'success', data: experience });
-  } catch (error) { 
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
 
 
-export const getCoachCourses = async (req, res) => { 
+export const getCoachCourses = async (req, res) => {
   // /mentor-courses/:mentorId --> EndPoint
   const { coachId } = req.params;
   if (!coachId) {
@@ -488,12 +488,12 @@ export const getCoachCourses = async (req, res) => {
       where: { id: coachId },
       select: { courses: true },
     });
-    if (!coach) { 
-      return res.status(404).json({ status: 'error', message: 'Coach not found' }); 
+    if (!coach) {
+      return res.status(404).json({ status: 'error', message: 'Coach not found' });
     }
     const courseCount = coach.courses.length;
     res.json({ status: 'success', data: courseCount });
-  } catch (error) { 
+  } catch (error) {
     console.error('Error while geting coach courses', error);
     res.status(500).json({ status: 'error', message: 'Internal Server Error' });
   }
@@ -512,18 +512,18 @@ export const getCoachRating = async (req, res) => {
     });
     const averageRating = ratings.reduce((sum, rating) => sum + + rating.rating, 0) / (ratings.length || 1);
     res.json({ data: averageRating });
-  } catch(error) { 
+  } catch (error) {
     console.error('Error while retrieving the ratings', error);
     res.status(500).json({ error: error.message });
   }
 }
 
 
-export const submitMentorReview = async (req, res) => { 
+export const submitMentorReview = async (req, res) => {
   // POST:  /mentor-review/:mentorId ==> EndPoint
   const { studentId, rating } = req.body;
   const { coachId } = req.params;
-  if (!coachId) { 
+  if (!coachId) {
     return res.status(400).json({ status: 'error', message: 'Coach ID required' });
   }
   try {
@@ -535,7 +535,7 @@ export const submitMentorReview = async (req, res) => {
       }
     });
     res.status({ message: 'success', data: rating });
-  } catch (error) { 
+  } catch (error) {
     console.log('Error, occured when rating a mentor or coach', error);
     res.status(500).json({ error: error.message });
   }
@@ -566,16 +566,16 @@ export const getReview = async (req, res) => {
       rating: review.rating,
       studentName: `${review.student.user.firstName} ${review.student.user.lastName}`
     })));
-  } catch (error) { 
+  } catch (error) {
     console.error('Error while fetching review', error);
     res.status(500).json({ error: error.message });
   }
 }
 
-export const getMentorCV = async (req, res) => { 
+export const getMentorCV = async (req, res) => {
   const { mentorId } = req.params
-  if (!mentorId) { 
-    return res.status(400).json({status: 'error', message: 'Error Coach Id Required'})
+  if (!mentorId) {
+    return res.status(400).json({ status: 'error', message: 'Error Coach Id Required' })
   }
   try {
     const coach = await prisma.coach.findUnique({
@@ -584,7 +584,7 @@ export const getMentorCV = async (req, res) => {
         documents: { select: { fileUrl: true, fileName: true } }
       }
     });
-    
+
     if (!coach || !coach.documents || coach.documents.length === 0) {
       return res.status(404).json({ status: 'error', message: 'Coach CV not found' });
     }
@@ -594,21 +594,21 @@ export const getMentorCV = async (req, res) => {
         res.status(500).json({ status: 'error', message: 'Error downloading file' });
       }
     });
-  } catch (error) { 
+  } catch (error) {
     console.error(error);
     res.status(500).json({ status: 'error', message: 'Internal Server Error' });
   }
 }
 /* End of Student Mentor (Coach) API */
-            
-            /********* Student Calender API *************
-            *                                       *
-            *                                       *
-            *                                       *
-            *****************************************/
-            /* Everything from here until indicated is the service for the
-                Student Calender API
-            */
+
+/********* Student Calender API *************
+*                                       *
+*                                       *
+*                                       *
+*****************************************/
+/* Everything from here until indicated is the service for the
+    Student Calender API
+*/
 
 // Fetch event schedule
 export const getEventSchedule = async (req, res) => {
@@ -727,17 +727,17 @@ export const getCalendarView = async (req, res) => {
 // Fetch all available course categories
 export const getAvailableCareers = async (req, res) => {
   try {
-      const careers = await prisma.career.findMany({
-          select: {
-              id: true,
-              title: true,
-              description: true,
-          },
-      });
-      res.json(careers);
+    const careers = await prisma.career.findMany({
+      select: {
+        id: true,
+        title: true,
+        description: true,
+      },
+    });
+    res.json(careers);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal Server Error' });
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -779,10 +779,10 @@ export const getAvailableCareers = async (req, res) => {
 // };
 
 export const getMentorsByCareer = async (req, res) => {
-  const { title } = req.body;
+  const { id } = req.params; // Retrieve the careerId from the URL parameters
 
-  if(!title) {
-    return res.status(400).json({status: 'error', message: 'No title provided'})
+  if (!id) {
+    return res.status(400).json({ status: 'error', message: 'No careerId provided' });
   }
 
   try {
@@ -790,9 +790,8 @@ export const getMentorsByCareer = async (req, res) => {
       where: {
         career: {
           some: {
-            title: {
-              equals: title,
-              mode: "insensitive", // Case-insensitive match
+            id: {
+              equals: id, // Match with careerId (now from URL)
             },
           },
         },
@@ -805,23 +804,17 @@ export const getMentorsByCareer = async (req, res) => {
       },
     });
 
-    // Map mentors to include bio and image from scalar fields
-    const mentorsWithBioAndImage = mentors.map((mentor) => ({
-      ...mentor,
-      bio: mentor.bio,
-      image: mentor.image,
-    }));
-
-    if (!mentors.length) {
-      return res.status(404).json({ message: 'No mentors found for this career' });
+    if (mentors.length === 0) {
+      return res.status(404).json({ status: 'error', message: 'No mentors found for the selected career' });
     }
 
-    res.json(mentorsWithBioAndImage);
+    return res.status(200).json({ status: 'success', data: mentors });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ status: 'error', message: 'An error occurred while retrieving mentors' });
   }
 };
+
 
 
 // export const sendRequestToCoach = async (req, res) => {
@@ -848,32 +841,32 @@ export const sendRequestToCoach = async (req, res) => {
   const { studentId, coachId } = req.body;
 
   try {
-      // Check if coach exists
-      const coachExists = await prisma.coach.findUnique({ where: { id: coachId } });
-      if (!coachExists) {
-          return res.status(404).json({ message: 'Coach not found' });
-      }
+    // Check if coach exists
+    const coachExists = await prisma.coach.findUnique({ where: { id: coachId } });
+    if (!coachExists) {
+      return res.status(404).json({ message: 'Coach not found' });
+    }
 
-      // Check if student exists
-      const studentExists = await prisma.student.findUnique({ where: { id: studentId } });
-      if (!studentExists) {
-          return res.status(404).json({ message: 'Student not found' });
-      }
+    // Check if student exists
+    const studentExists = await prisma.student.findUnique({ where: { id: studentId } });
+    if (!studentExists) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
 
-      // Update student-coach relationship to WAITLIST
-      const student = await prisma.student.update({
-          where: { id: studentId },
-          data: {
-              coaches: {
-                  connect: { id: coachId },
-              },
-              status: 'WAITLIST',
-          },
-      });
+    // Update student-coach relationship to WAITLIST
+    const student = await prisma.student.update({
+      where: { id: studentId },
+      data: {
+        coaches: {
+          connect: { id: coachId },
+        },
+        status: 'WAITLIST',
+      },
+    });
 
-      res.json({ message: 'Request sent to the coach', student });
+    res.json({ message: 'Request sent to the coach', student });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal Server Error' });
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
