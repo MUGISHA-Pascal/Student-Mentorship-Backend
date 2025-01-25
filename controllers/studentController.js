@@ -816,27 +816,6 @@ export const getMentorsByCareer = async (req, res) => {
 };
 
 
-
-// export const sendRequestToCoach = async (req, res) => {
-//   const { studentId, coachId } = req.body;
-//   try {
-//       // Update student-coach relationship to WAITLIST
-//       const student = await prisma.student.update({
-//           where: { id: studentId },
-//           data: {
-//               coaches: {
-//                   connect: { id: coachId },
-//               },
-//               status: 'WAITLIST',
-//           },
-//       });
-//       res.json({ message: 'Request sent to the coach', student });
-//   } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: 'Internal Server Error' });
-//   }
-// };
-
 export const sendRequestToCoach = async (req, res) => {
   const { studentId, coachId } = req.body;
 
