@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import sendEmail from "../utils/sendEmail.js";
 const prisma = new PrismaClient();
 
 // 1. Retrieve a list of students (allow filtering and sorting by course)
@@ -911,5 +912,231 @@ export const sendRequestToCoach = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+
+// export const enrollStudent = async (req, res) => {
+//   const { studentId, careerId } = req.body;
+
+//   try {
+//     // Find upcoming cohort for the specified career
+//     const cohort = await prisma.cohort.findFirst({
+//       where: {
+//         careerId,
+//         status: 'UPCOMING',
+//         startDate: { gt: new Date() }
+//       },
+//       orderBy: { startDate: 'asc' }
+//     });
+
+//     if (!cohort) {
+//       return res.status(404).json({ message: 'No upcoming cohorts available for this career' });
+//     }
+
+//     // Check if the cohort has reached its capacity
+//     const enrollmentCount = await prisma.enrollment.count({
+//       where: { cohortId: cohort.id }
+//     });
+
+//     if (enrollmentCount >= cohort.capacity) {
+//       return res.status(400).json({ message: 'Cohort is full' });
+//     }
+
+//     // Create enrollment
+//     const enrollment = await prisma.enrollment.create({
+//       data: {
+//         student: { connect: { id: studentId } },
+//         cohort: { connect: { id: cohort.id } },
+//         status: 'PENDING'
+//       },
+//       include: {
+//         cohort: {
+//           include: { career: true }
+//         },
+//         student: {
+//           include: { user: true }
+//         }
+//       }
+//     });
+
+//     // Update Student with the currentEnrollment pointer for fast lookup
+//     await prisma.student.update({
+//       where: { id: studentId },
+//       data: { currentEnrollmentId: enrollment.id }
+//     });
+
+//     // Send confirmation email (assuming sendEmail and emailTemplate are defined)
+//     const subject = `Enrollment Confirmation - ${enrollment.cohort.career.title}`;
+//     const htmlContent = (
+//       `Welcome to ${enrollment.cohort.name}!`,
+//       `
+//         <p>You've successfully joined our ${enrollment.cohort.career.title} cohort starting on ${enrollment.cohort.startDate.toDateString()}</p>
+//         <p>Next steps:</p>
+//         <ul>
+//           <li>Complete your profile setup</li>
+//           <li>Attend orientation session</li>
+//           <li>Check your email for mentor matching updates</li>
+//         </ul>
+//       `
+//     );
+
+//     await sendEmail(enrollment.student.user.email, subject, null, htmlContent);
+
+//     res.status(201).json(enrollment);
+//   } catch (error) {
+//     console.error('Enrollment error:', error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };
+
+export const enrollStudent = async (req, res) => {
+  const { studentId, careerId } = req.body;
+
+  try {
+    // Find upcoming cohort for the specified career
+    const cohort = await prisma.cohort.findFirst({
+      where: {
+        careerId,
+        status: 'UPCOMING',
+        startDate: { gt: new Date() }
+      },
+      orderBy: { startDate: 'asc' }
+    });
+
+    if (!cohort) {
+      return res.status(404).json({ message: 'No upcoming cohorts available for this career' });
+    }
+
+    // Check if the student is already enrolled in the cohort
+    const existingEnrollment = await prisma.enrollment.findUnique({
+      where: {
+        studentId_cohortId: {
+          studentId,
+          cohortId: cohort.id
+        }
+      }
+    });
+
+    if (existingEnrollment) {
+      return res.status(400).json({ message: 'Student is already enrolled in this cohort' });
+    }
+
+    // Check if the cohort has reached its capacity
+    const enrollmentCount = await prisma.enrollment.count({
+      where: { cohortId: cohort.id }
+    });
+
+    if (enrollmentCount >= cohort.capacity) {
+      return res.status(400).json({ message: 'Cohort is full' });
+    }
+
+    // Create enrollment
+    const enrollment = await prisma.enrollment.create({
+      data: {
+        student: { connect: { id: studentId } },
+        cohort: { connect: { id: cohort.id } },
+        status: 'PENDING'
+      },
+      include: {
+        cohort: { include: { career: true } },
+        student: { include: { user: true } }
+      }
+    });
+
+    // Update Student with the currentEnrollment pointer for fast lookup
+    await prisma.student.update({
+      where: { id: studentId },
+      data: { currentEnrollmentId: enrollment.id }
+    });
+
+    // Send confirmation email
+    const subject = `Enrollment Confirmation - ${enrollment.cohort.career.title}`;
+    const htmlContent = `
+      <p>Welcome to ${enrollment.cohort.name}!</p>
+      <p>You've successfully joined our ${enrollment.cohort.career.title} cohort starting on ${enrollment.cohort.startDate.toDateString()}.</p>
+      <p>Next steps:</p>
+      <ul>
+        <li>Complete your profile setup</li>
+        <li>Attend orientation session</li>
+        <li>Check your email for mentor matching updates</li>
+      </ul>
+    `;
+
+    await sendEmail(enrollment.student.user.email, subject, null, htmlContent);
+
+    // res.status(201).json(enrollment);
+    res.status(201).json({ 
+      message: `Successfully joined ${enrollment.cohort.name} in ${enrollment.cohort.career.title}` 
+    });
+  } catch (error) {
+    console.error('Enrollment error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+
+// Get student enrollments
+export const getStudentEnrollments = async (req, res) => {
+  const { studentId } = req.params;
+
+  try {
+    const enrollments = await prisma.enrollment.findMany({
+      where: { studentId },
+      include: {
+        cohort: {
+          include: { career: true }
+        }
+      }
+    });
+
+    res.json(enrollments);
+  } catch (error) {
+    console.error('Error fetching enrollments:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Cohort management controllers
+export const getCohorts = async (req, res) => {
+  try {
+    const cohorts = await prisma.cohort.findMany({
+      include: {
+        career: true,
+        _count: { select: { enrollments: true } }
+      }
+    });
+
+    res.json(cohorts.map(cohort => ({
+      ...cohort,
+      availableSlots: cohort.capacity - cohort._count.enrollments
+    })));
+  } catch (error) {
+    console.error('Error fetching cohorts:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const createCohort = async (req, res) => {
+  const { careerId, name, startDate, endDate, capacity } = req.body;
+
+  try {
+    const newCohort = await prisma.cohort.create({
+      data: {
+        name,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        capacity: parseInt(capacity),
+        careerId,
+        status: 'UPCOMING'
+      }
+    });
+
+    res.status(201).json(newCohort);
+  } catch (error) {
+    console.error('Error creating cohort:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };

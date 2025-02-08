@@ -21,6 +21,7 @@ import {
     getCoachesList,
     getWaitlistForCoach,
     updateStudentStatus,
+    getAllStudents,
 } from '../controllers/coachController.js'; // Importing controller functions
 import multer from 'multer';
 
@@ -56,3 +57,4 @@ coachRouter.delete('/:id/work-experience/:experienceId', deleteWorkExperience); 
 coachRouter.get('/:id/work-experience/', getWorkExperience); // Fetch work experience
 coachRouter.get('/waitlist/:coachId', getWaitlistForCoach); // Fetch work experience
 coachRouter.put('/:coachId/student/status', updateStudentStatus)
+coachRouter.get('/students/:coachId', getAllStudents)

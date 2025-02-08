@@ -101,6 +101,19 @@ export const loginUser = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { email },
+      // Optionally, include the student record in the same query:
+      include: {
+        student: {
+          include: {
+            enrollments: {
+              where: { status: "ACTIVE" }, // Fetch only active enrollments
+              include: {
+                cohort: true,
+              },
+            },
+          }
+        }
+      }
     });
 
     if (!user) {

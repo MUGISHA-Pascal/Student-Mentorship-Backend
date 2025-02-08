@@ -729,3 +729,45 @@ export const updateStudentStatus = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+export const getAllStudents = async (req, res) => {
+    const { coachId } = req.params; // Coach ID is passed as a route parameter
+
+    try {
+        // Verify the coach exists
+        const coachExists = await prisma.coach.findUnique({
+            where: { id: coachId },
+        });
+
+        if (!coachExists) {
+            return res.status(404).json({ message: 'Coach not found' });
+        }
+
+        // Fetch students assigned to the coach
+        const students = await prisma.student.findMany({
+            where: {
+                coaches: {
+                    some: { id: coachId }, // Ensure the student has this coach relationship
+                },
+            },
+            include: {
+                user: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+
+        if (!students.length) {
+            return res.status(404).json({ message: 'No students found for this coach' });
+        }
+
+        res.json(students);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};

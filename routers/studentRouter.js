@@ -29,7 +29,11 @@ import {
     getAvailableCareers,
     getMentorsByCareer,
     sendRequestToCoach,
-    updateStudentProfile
+    updateStudentProfile,
+    enrollStudent,
+    getStudentEnrollments,
+    getCohorts,
+    createCohort
 } from '../controllers/studentController.js';
 import multer from 'multer';
 
@@ -125,4 +129,12 @@ studentRouter.put('/sendRequest', sendRequestToCoach);
 
 //29. Update the student profile
 studentRouter.put('/update/:userId', upload.fields([{ name: 'image' }]), updateStudentProfile);
+
+// Enrollment routes
+studentRouter.post('/enroll', enrollStudent);
+studentRouter.get('/:studentId/enrollments', getStudentEnrollments);
+
+// Cohort management routes (admin)
+studentRouter.get('/cohorts', getCohorts);
+studentRouter.post('/cohorts', createCohort);
 

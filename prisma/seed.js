@@ -1,87 +1,80 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ROLE } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Seed Courses
-  const course1 = await prisma.course.create({
-    data: { name: 'Introduction to Programming' },
-  });
+  const password = "1234567890";
+  const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
 
-  const course2 = await prisma.course.create({
-    data: { name: 'Advanced Data Structures' },
-  });
-
-  // Seed Careers
-  const career1 = await prisma.career.create({
+  // Create Student 1
+  const studentUser1 = await prisma.user.create({
     data: {
-      title: 'Software Engineer',
-      description: 'Develops software applications.',
+      firstName: "Elissa",
+      lastName: "Firstborn",
+      email: "elissafirstborn@gmail.com",
+      dob: "2005-01-01",
+      gender: "male",
+      password: hashedPassword, // Store hashed password
+      role: ROLE.STUDENT,
     },
   });
 
-  const career2 = await prisma.career.create({
+  // Create a corresponding student profile
+  await prisma.student.create({
     data: {
-      title: 'Data Scientist',
-      description: 'Analyzes data to provide insights.',
+      userId: studentUser1.id,
     },
   });
 
-  // Seed Coaches with unique emails
-  const coach1 = await prisma.coach.create({
+  // Create Student 2
+  const studentUser2 = await prisma.user.create({
     data: {
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'unique-coach1@example.com', // Ensure this email is unique
-      bio: 'Experienced Software Engineer.',
-      image: 'https://example.com/coach-a.jpg',
-      career: { connect: [{ id: career1.id }] },
-      courses: { connect: [{ id: course1.id }, { id: course2.id }] },
+      firstName: "Elissa",
+      lastName: "Dusabe",
+      email: "elissadusabe@gmail.com",
+      dob: "2004-05-15",
+      gender: "male",
+      password: hashedPassword, // Store hashed password
+      role: ROLE.STUDENT,
     },
   });
 
-  const coach2 = await prisma.coach.create({
+  await prisma.student.create({
     data: {
-      firstName: 'Jane',
-      lastName: 'Smith',
-      email: 'unique-coach2@example.com', // Ensure this email is unique
-      bio: 'Passionate Data Scientist.',
-      image: 'https://example.com/coach-b.jpg',
-      career: { connect: [{ id: career2.id }] },
-      courses: { connect: [{ id: course1.id }] },
+      userId: studentUser2.id,
     },
   });
 
-  // The rest of your seed data remains the same
-  const student1 = await prisma.student.create({
+  // Create Mentor
+  const mentorUser = await prisma.user.create({
     data: {
-      name: 'Student X',
-      status: 'APPROVED',
-      courses: { connect: [{ id: course1.id }] },
-      coaches: { connect: [{ id: coach1.id }] },
+      firstName: "Dusabe",
+      lastName: "Elissa",
+      email: "dusabeelissa05@gmail.com",
+      dob: "2003-03-20",
+      gender: "male",
+      password: hashedPassword, // Store hashed password
+      role: ROLE.MENTOR,
     },
   });
 
-  const student2 = await prisma.student.create({
+  await prisma.coach.create({
     data: {
-      name: 'Student Y',
-      status: 'WAITLIST',
-      courses: { connect: [{ id: course2.id }] },
-      coaches: { connect: [{ id: coach2.id }] },
+      userId: mentorUser.id,
+      bio: "Experienced mentor in her field.",
+      image: "https://example.com/mentor.jpg",
     },
   });
 
-  // Add other seed data here...
-
-  console.log('Database seeded successfully!');
+  console.log("Users seeded successfully!");
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
+  .catch((e) => {
+    console.error("Error seeding data:", e);
     process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
   });

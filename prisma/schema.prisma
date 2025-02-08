@@ -121,17 +121,20 @@ model Course {
 }
 
 model Student {
-  id      String   @id @default(uuid())
-  userId  String   @unique // Foreign key to User
-  bio     String?
-  educationLevel    String?
-  image   String?
-  user    User     @relation("UserStudent", fields: [userId], references: [id])
-  courses Course[] @relation("CourseStudents")
-  coaches Coach[]  @relation("CoachStudents")
-  status  Status   @default(WAITLIST)
-  ratings Rating[] @relation("StudentRatings")
+  id                  String       @id @default(uuid())
+  userId              String       @unique // Foreign key to User
+  bio                 String?
+  educationLevel      String?
+  image               String?
+  user                User         @relation("UserStudent", fields: [userId], references: [id])
+  enrollments         Enrollment[] @relation("StudentEnrollments")
+  currentEnrollmentId String?   
+  courses             Course[]     @relation("CourseStudents")
+  coaches             Coach[]      @relation("CoachStudents")
+  status              Status       @default(WAITLIST)
+  ratings             Rating[]     @relation("StudentRatings")
 }
+
 
 enum Status {
   WAITLIST
@@ -185,6 +188,7 @@ model Career {
   title       String   @unique
   description String
   coaches     Coach[]  @relation("CoachCareers")
+  cohorts     Cohort[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -210,7 +214,6 @@ model Rating {
   student   Student  @relation("StudentRatings", fields: [studentId], references: [id]) // Corresponding relation
 }
 
-// I Muhammad Hasim contribution to the schema starts here
 // Event Schema
 model Event {
   id        Int      @id @default(autoincrement())
@@ -245,7 +248,6 @@ model Meeting {
   createdAt DateTime @default(now())
 }
 
-// I Muhammad Hasim contribution ends here...
 model Session {
   id           String               @id @default(cuid())
   title        String
@@ -278,4 +280,50 @@ enum SessionStatus {
   SCHEDULED
   ONGOING
   COMPLETED
+}
+
+//Cohort related
+
+model Cohort {
+  id          String     @id @default(uuid())
+  name        String
+  career      Career     @relation(fields: [careerId], references: [id])
+  careerId    String
+  startDate   DateTime
+  endDate     DateTime
+  status      CohortStatus @default(UPCOMING)
+  capacity    Int
+  enrollments Enrollment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([careerId])
+}
+
+enum CohortStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+}
+
+model Enrollment {
+  id         String             @id @default(uuid())
+  student    Student            @relation("StudentEnrollments", fields: [studentId], references: [id])
+  studentId  String
+  cohort     Cohort             @relation(fields: [cohortId], references: [id])
+  cohortId   String
+  enrolledAt DateTime           @default(now())
+  status     EnrollmentStatus   @default(PENDING)
+  
+  @@index([studentId])
+  @@index([cohortId])
+  @@unique([studentId, cohortId])
+}
+
+
+enum EnrollmentStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
 }
