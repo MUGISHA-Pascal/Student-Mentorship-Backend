@@ -109,3 +109,59 @@ export const deleteStudent = async (req, res) => {
     res.status(500).json({ error: "Failed to delete student", details: error.message });
   }
 };
+
+// Admin statistics
+
+export const getAdminStatistics = async (req, res) => {
+  try {
+    // Get total counts
+    const studentCount = await prisma.student.count();
+    const mentorCount = await prisma.coach.count();
+    const courseCount = await prisma.course.count();
+    const cohortCount = await prisma.cohort.count();
+
+    // Count approved & waitlisted students
+    const approvedStudents = await prisma.student.count({
+      where: { status: "APPROVED" },
+    });
+
+    const waitlistedStudents = await prisma.student.count({
+      where: { status: "WAITLIST" },
+    });
+
+    // Count approved & waitlisted mentors
+    const approvedMentors = await prisma.coach.count({
+      where: {
+        user: {
+          approved: true,
+        },
+      },
+    });
+
+    const waitlistedMentors = await prisma.coach.count({
+      where: {
+        user: {
+          approved: false,
+        },
+      },
+    });
+
+    res.status(200).json({
+      studentCount,
+      mentorCount,
+      courseCount,
+      cohortCount,
+      approvedStudents,
+      waitlistedStudents,
+      approvedMentors,
+      waitlistedMentors,
+    });
+  } catch (error) {
+    console.error(error);
+    console.log(error);
+    res.status(500).json({
+      error: "Failed to fetch admin statistics",
+      details: error.message,
+    });
+  }
+};

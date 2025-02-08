@@ -51,108 +51,51 @@ export const deleteUser = async (req, res) => {
   }
 }
 
-// // Get any table id from userId related to
-
-// export const getEntityFromToken = async (req, res) => {
-//   const token = req.headers['authorization']; // Assuming token is sent in the Authorization header
-
-//   // if (!token) {
-//   //     return res.status(400).json({ message: 'Authorization token is missing' });
-//   // }
-
-//   const { table } = req.query; // Extract table and field as query parameters
-
-//   if (!table) {
-//       return res.status(400).json({ message: 'Table name is required' });
-//   }
-
-//   try {
-//       // Inline decoding logic
-//       let decodedToken;
-//       try {
-//           // decodedToken = jwt.verify(token, process.env.JWT_SECRET); // Replace 'your-secret-key' with your actual secret
-//           decodedToken = jwtDecode(token);
-//       } catch (error) {
-//           console.error('Error decoding token:', error);
-//           return res.status(400).json({ message: 'Invalid token' });
-// }
-
-//       if (!decodedToken || !decodedToken.id) {
-//           return res.status(400).json({ message: 'Invalid token structure' });
-//       }
-
-//       const userId = decodedToken.id;
-
-//       // Dynamically query the specified table
-//       let result;
-//       switch (table) {
-//           case 'coach':
-//               result = await prisma.coach.findUnique({
-//                   where: { userId },
-//                   // select: { [field]: true },
-//               });
-//               break;
-
-//           case 'student':
-//               result = await prisma.student.findUnique({
-//                   where: { userId },
-//                   // select: { [field]: true },
-//               });
-//               break;
-
-//           // Add more cases for other tables as needed
-//           default:
-//               return res.status(400).json({ message: `Unsupported table: ${table}` });
-//       }
-
-//       if (!result) {
-//           return res.status(404).json({ message: `${table} not found for this user` });
-//       }
-
-//       res.json(result);
-//   } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: 'Error retrieving data' });
-//   }
-// };
+// Get any table id from userId related to
 
 export const getEntityFromToken = async (req, res) => {
   const { table } = req.query; // Extract table name as a query parameter
 
   if (!table) {
-      return res.status(400).json({ message: 'Table name is required' });
+    return res.status(400).json({ message: 'Table name is required' });
   }
 
   const userId = req.userId; // Retrieved from the middleware
 
   try {
-      let result;
+    let result;
 
-      // Dynamically query the specified table
-      switch (table) {
-          case 'coach':
-              result = await prisma.coach.findUnique({
-                  where: { userId },
-              });
-              break;
+    // Dynamically query the specified table
+    switch (table) {
+      case 'coach':
+        result = await prisma.coach.findUnique({
+          where: { userId },
+        });
+        break;
 
-          case 'student':
-              result = await prisma.student.findUnique({
-                  where: { userId },
-              });
-              break;
+      case 'student':
+        result = await prisma.student.findUnique({
+          where: { userId },
+        });
+        break;
 
-          default:
-              return res.status(400).json({ message: `Unsupported table: ${table}` });
-      }
+      case 'admin':
+        result = await prisma.admin.findUnique({
+          where: { userId },
+        });
+        break;
 
-      if (!result) {
-          return res.status(404).json({ message: `${table} not found for this user` });
-      }
+      default:
+        return res.status(400).json({ message: `Unsupported table: ${table}` });
+    }
 
-      res.json(result);
+    if (!result) {
+      return res.status(404).json({ message: `${table} not found for this user` });
+    }
+
+    res.json(result);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error retrieving data' });
+    console.error(error);
+    res.status(500).json({ message: 'Error retrieving data' });
   }
 };

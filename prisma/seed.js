@@ -67,7 +67,72 @@ async function main() {
     },
   });
 
-  console.log("Users seeded successfully!");
+  // Create Blogs
+  const blogData = [
+    {
+      title: "First Blog",
+      description: "This is the description for the first blog.",
+      writer: "Admin",
+      image: "https://assets.everspringpartners.com/dims4/default/4999f8a/2147483647/strip/true/crop/620x251+0+0/resize/620x251!/format/webp/quality/90/?url=http%3A%2F%2Feverspring-brightspot.s3.us-east-1.amazonaws.com%2F50%2F43%2F08168c84400db8cb812ccd961e4d%2Fadobestock-439234053-mumimcoaching-620x250.jpeg"
+    },
+    {
+      title: "Second Blog",
+      description: "This is the description for the second blog.",
+      writer: "Admin",
+      image: "https://assets.everspringpartners.com/dims4/default/4999f8a/2147483647/strip/true/crop/620x251+0+0/resize/620x251!/format/webp/quality/90/?url=http%3A%2F%2Feverspring-brightspot.s3.us-east-1.amazonaws.com%2F50%2F43%2F08168c84400db8cb812ccd961e4d%2Fadobestock-439234053-mumimcoaching-620x250.jpeg"
+    },
+    {
+      title: "Third Blog",
+      description: "This is the description for the third blog.",
+      writer: "Admin",
+      image: "https://assets.everspringpartners.com/dims4/default/4999f8a/2147483647/strip/true/crop/620x251+0+0/resize/620x251!/format/webp/quality/90/?url=http%3A%2F%2Feverspring-brightspot.s3.us-east-1.amazonaws.com%2F50%2F43%2F08168c84400db8cb812ccd961e4d%2Fadobestock-439234053-mumimcoaching-620x250.jpeg"
+    },
+    {
+      title: "Fourth Blog",
+      description: "This is the description for the fourth blog.",
+      writer: "Admin",
+      image: "https://assets.everspringpartners.com/dims4/default/4999f8a/2147483647/strip/true/crop/620x251+0+0/resize/620x251!/format/webp/quality/90/?url=http%3A%2F%2Feverspring-brightspot.s3.us-east-1.amazonaws.com%2F50%2F43%2F08168c84400db8cb812ccd961e4d%2Fadobestock-439234053-mumimcoaching-620x250.jpeg"
+    },
+    {
+      title: "Fifth Blog",
+      description: "This is the description for the fifth blog.",
+      writer: "Admin",
+      image: "https://assets.everspringpartners.com/dims4/default/4999f8a/2147483647/strip/true/crop/620x251+0+0/resize/620x251!/format/webp/quality/90/?url=http%3A%2F%2Feverspring-brightspot.s3.us-east-1.amazonaws.com%2F50%2F43%2F08168c84400db8cb812ccd961e4d%2Fadobestock-439234053-mumimcoaching-620x250.jpeg"
+    },
+    {
+      title: "Sixth Blog",
+      description: "This is the description for the sixth blog.",
+      writer: "Admin",
+      image: "https://assets.everspringpartners.com/dims4/default/4999f8a/2147483647/strip/true/crop/620x251+0+0/resize/620x251!/format/webp/quality/90/?url=http%3A%2F%2Feverspring-brightspot.s3.us-east-1.amazonaws.com%2F50%2F43%2F08168c84400db8cb812ccd961e4d%2Fadobestock-439234053-mumimcoaching-620x250.jpeg"
+    },
+    {
+      title: "Seventh Blog",
+      description: "This is the description for the seventh blog.",
+      writer: "Admin",
+      image: "https://assets.everspringpartners.com/dims4/default/4999f8a/2147483647/strip/true/crop/620x251+0+0/resize/620x251!/format/webp/quality/90/?url=http%3A%2F%2Feverspring-brightspot.s3.us-east-1.amazonaws.com%2F50%2F43%2F08168c84400db8cb812ccd961e4d%2Fadobestock-439234053-mumimcoaching-620x250.jpeg"
+    },
+    {
+      title: "Eighth Blog",
+      description: "This is the description for the eighth blog.",
+      writer: "Admin",
+      image: "https://assets.everspringpartners.com/dims4/default/4999f8a/2147483647/strip/true/crop/620x251+0+0/resize/620x251!/format/webp/quality/90/?url=http%3A%2F%2Feverspring-brightspot.s3.us-east-1.amazonaws.com%2F50%2F43%2F08168c84400db8cb812ccd961e4d%2Fadobestock-439234053-mumimcoaching-620x250.jpeg"
+    },
+    {
+      title: "Ninth Blog",
+      description: "This is the description for the ninth blog.",
+      writer: "Admin",
+      image: "https://assets.everspringpartners.com/dims4/default/4999f8a/2147483647/strip/true/crop/620x251+0+0/resize/620x251!/format/webp/quality/90/?url=http%3A%2F%2Feverspring-brightspot.s3.us-east-1.amazonaws.com%2F50%2F43%2F08168c84400db8cb812ccd961e4d%2Fadobestock-439234053-mumimcoaching-620x250.jpeg"
+    }
+  ];
+
+  // Insert blogs into the database
+  for (const blog of blogData) {
+    await prisma.blog.create({
+      data: blog,
+    });
+  }
+
+  console.log("Blogs seeded successfully!");
 }
 
 main()

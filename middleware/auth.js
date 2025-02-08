@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 export const generateToken = (user) => {
-  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: '1h',
   });
 };
@@ -29,21 +29,10 @@ export const verifyToken = (req, res, next) => {
   });
 };
 
-// export const checkAdmin = (req, res, next) => {
-//   if (req.userRole !== 'ADMIN') {
-//     return res.status(403).json({ error: 'Access denied. Admins only' });
-//   }
-//   next();
-// };
-
-export const verifyAdmin = (req, res, next) => {
-  const { password } = req.body;
-  if (password !== "10//.") {
-    return res
-      .status(403)
-      .json({
-        message: "Invalid password"
-      });
+export const verifyAdmin = async (req, res, next) => {
+  if (req.userRole !== "ADMIN") {
+    return res.status(403).json({ error: "Access Denied. Admins only." });
   }
   next();
 };
+
