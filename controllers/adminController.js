@@ -3,6 +3,8 @@ import { startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 import { jwtDecode } from 'jwt-decode';
 import dotenv from 'dotenv';
 const prisma = new PrismaClient();
+
+
 export const getAllMentors = async (req, res) => {
   try {
     const coaches = await prisma.coach.findMany({
@@ -14,13 +16,6 @@ export const getAllMentors = async (req, res) => {
             lastName: true,
             email: true,
             approved: true,
-          },
-        },
-        career: { // Include career information
-          select: {
-            id: true,
-            title: true,
-            description: true,
           },
         },
       },
@@ -62,6 +57,37 @@ export const updateCoachApproval = async (req, res) => {
   }
 }
 
+// export const getAllStudents = async (req, res) => {
+//   try {
+//     const students = await prisma.student.findMany({
+//       include: {
+//         user: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             email: true,
+//             approved: true,
+//           },
+//         },
+//       },
+//     });
+
+//     const formattedStudents = students.map((student) => ({
+//       id: student.user.id,
+//       firstName: student.user.firstName,
+//       lastName: student.user.lastName,
+//       email: student.user.email,
+//       approved: student.user.approved,
+//     }));
+
+//     res.status(200).json(formattedStudents);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Failed to fetch students", details: error.message });
+//   }
+// };
+
 export const getAllStudents = async (req, res) => {
   try {
     const students = await prisma.student.findMany({
@@ -73,6 +99,39 @@ export const getAllStudents = async (req, res) => {
             lastName: true,
             email: true,
             approved: true,
+            gender: true,
+            dob: true,
+          },
+        },
+        enrollments: {
+          select: {
+            cohort: {
+              select: {
+                id: true,
+                name: true,
+                status: true,
+                career: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        coaches: {
+          select: {
+            id: true,
+            bio: true,
+            image: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -84,14 +143,33 @@ export const getAllStudents = async (req, res) => {
       lastName: student.user.lastName,
       email: student.user.email,
       approved: student.user.approved,
+      gender: student.user.gender,
+      dob: student.user.dob,
+      enrollments: student.enrollments.map((enrollment) => ({
+        cohortId: enrollment.cohort.id,
+        cohortName: enrollment.cohort.name,
+        cohortStatus: enrollment.cohort.status,
+        career: enrollment.cohort.career, // Contains career id and title
+      })),
+      coaches: student.coaches.map((coach) => ({
+        id: coach.id,
+        coachName: `${coach.user.firstName} ${coach.user.lastName}`,
+        coachEmail: coach.user.email,
+        bio: coach.bio,
+        image: coach.image,
+      })),
     }));
 
     res.status(200).json(formattedStudents);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to fetch students", details: error.message });
+    res.status(500).json({
+      error: "Failed to fetch students",
+      details: error.message,
+    });
   }
 };
+
 
 export const deleteStudent = async (req, res) => {
   const { studentId } = req.params;

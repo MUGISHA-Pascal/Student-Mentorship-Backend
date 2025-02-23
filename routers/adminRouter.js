@@ -3,7 +3,9 @@ import { deleteStudent, getAdminStatistics, getAllMentors, getAllStudents, updat
 import { verifyAdmin, verifyToken } from '../middleware/auth.js';
 export const adminRouter = express.Router();
 
-adminRouter.get('/mentors', getAllMentors)
+adminRouter.get('/mentors'
+    // ,verifyToken, verifyAdmin,sa
+     ,getAllMentors)
 adminRouter.put('/mentor/:coachId', updateCoachApproval)
 adminRouter.get('/students', getAllStudents)
 adminRouter.delete('/student/:studentId', deleteStudent)

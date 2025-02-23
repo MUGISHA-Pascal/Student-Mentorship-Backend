@@ -22,6 +22,7 @@ import {
     getWaitlistForCoach,
     updateStudentStatus,
     getAllStudents,
+    jotFormHook,
 } from '../controllers/coachController.js'; // Importing controller functions
 import multer from 'multer';
 
@@ -58,3 +59,4 @@ coachRouter.get('/:id/work-experience/', getWorkExperience); // Fetch work exper
 coachRouter.get('/waitlist/:coachId', getWaitlistForCoach); // Fetch work experience
 coachRouter.put('/:coachId/student/status', updateStudentStatus)
 coachRouter.get('/students/:coachId', getAllStudents)
+coachRouter.post('/jotform', jotFormHook)

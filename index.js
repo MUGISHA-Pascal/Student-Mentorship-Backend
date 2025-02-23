@@ -27,6 +27,10 @@ dotenv.config();
 
 const app = express();
 
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('Server is running');
