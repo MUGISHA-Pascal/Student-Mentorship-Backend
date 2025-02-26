@@ -33,7 +33,8 @@ import {
     enrollStudent,
     getStudentEnrollments,
     getCohorts,
-    createCohort
+    createCohort,
+    jotFormHook
 } from '../controllers/studentController.js';
 import multer from 'multer';
 
@@ -137,4 +138,6 @@ studentRouter.get('/:studentId/enrollments', getStudentEnrollments);
 // Cohort management routes (admin)
 studentRouter.get('/cohorts', getCohorts);
 studentRouter.post('/cohorts', createCohort);
+
+studentRouter.post('/jotform', jotFormHook)
 

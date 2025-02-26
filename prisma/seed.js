@@ -54,7 +54,7 @@ async function main() {
       email: "dusabeelissa05@gmail.com",
       dob: "2003-03-20",
       gender: "male",
-      password: hashedPassword, // Store hashed password
+      password: hashedPassword,
       role: ROLE.MENTOR,
     },
   });

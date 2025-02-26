@@ -1,16 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL_TEST")
 }
 
 model Blog {
@@ -23,40 +17,29 @@ model Blog {
 }
 
 model User {
-  id            String  @id @default(uuid())
-  firstName     String
-  lastName      String
-  email         String  @unique
-  dob           String
-  gender        String // 'male', 'female', 'other'
-  password      String
-  role          ROLE
-  filledForm    Boolean @default(false)
-  approved      Boolean @default(false)
-  filledProfile Boolean @default(false)
-
-  coach    Coach?               @relation("UserCoach")
-  student  Student?             @relation("UserStudent")
-  admin    Admin?               @relation("UserAdmin")
-  sessions SessionParticipant[]
-  messages Message[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id             String               @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String               @unique
+  dob            String
+  gender         String
+  password       String
+  role           ROLE
+  filledForm     Boolean              @default(false)
+  approved       Boolean              @default(false)
+  filledProfile  Boolean              @default(false)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  admin          Admin?               @relation("UserAdmin")
+  coach          Coach?               @relation("UserCoach")
   events         Event[]
-  recentActivity RecentActivity[]
   metting        Meeting[]
+  messages       Message[]
+  recentActivity RecentActivity[]
+  sessions       SessionParticipant[]
+  student        Student?             @relation("UserStudent")
 
   @@map("users")
-}
-
-enum ROLE {
-  STUDENT
-  MENTOR
-  ADMIN
-  EMPLOYER
-  FAMILY
 }
 
 model OTP {
@@ -87,59 +70,52 @@ model EmailSubscription {
 
 model Coach {
   id             String           @id @default(uuid())
-  userId         String           @unique // Foreign key to User
-  user           User             @relation("UserCoach", fields: [userId], references: [id])
+  userId         String           @unique
   bio            String?
   image          String?
-  ratings        Rating[]         @relation("CoachRatings")
-  courses        Course[]         @relation("CoachCourses")
-  students       Student[]        @relation("CoachStudents")
-  activities     Activity[]
-  documents      Document[]       @relation("CoachDocuments")
-  career         Career[]         @relation("CoachCareers")
-  cv             CoachCV[]        @relation("CoachDocuments")
-  workExperience WorkExperience[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  activities     Activity[]
+  user           User             @relation("UserCoach", fields: [userId], references: [id], onDelete: Cascade)
+  cv             CoachCV[]        @relation("CoachDocuments")
+  documents      Document[]       @relation("CoachDocuments")
+  ratings        Rating[]         @relation("CoachRatings")
+  workExperience WorkExperience[]
+  career         Career[]         @relation("CoachCareers")
+  courses        Course[]         @relation("CoachCourses")
+  students       Student[]        @relation("CoachStudents")
 }
 
 model Admin {
   id        String   @id @default(uuid())
   userId    String   @unique
-  user      User     @relation("UserAdmin", fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation("UserAdmin", fields: [userId], references: [id])
 }
 
 model Course {
   id          String     @id @default(uuid())
   name        String
   description String?
+  documents   Document[] @relation("CourseDocuments")
   coaches     Coach[]    @relation("CoachCourses")
   students    Student[]  @relation("CourseStudents")
-  documents   Document[] @relation("CourseDocuments")
 }
 
 model Student {
   id                  String       @id @default(uuid())
-  userId              String       @unique // Foreign key to User
+  userId              String       @unique
+  status              Status       @default(WAITLIST)
   bio                 String?
   educationLevel      String?
   image               String?
-  user                User         @relation("UserStudent", fields: [userId], references: [id])
+  currentEnrollmentId String?
   enrollments         Enrollment[] @relation("StudentEnrollments")
-  currentEnrollmentId String?   
-  courses             Course[]     @relation("CourseStudents")
-  coaches             Coach[]      @relation("CoachStudents")
-  status              Status       @default(WAITLIST)
   ratings             Rating[]     @relation("StudentRatings")
-}
-
-
-enum Status {
-  WAITLIST
-  APPROVED
-  REJECTED
+  user                User         @relation("UserStudent", fields: [userId], references: [id])
+  coaches             Coach[]      @relation("CoachStudents")
+  courses             Course[]     @relation("CourseStudents")
 }
 
 model Activity {
@@ -148,15 +124,9 @@ model Activity {
   createdAt DateTime       @default(now())
   status    ActivityStatus
   image     String?
-  coach     Coach          @relation(fields: [coachId], references: [id])
   coachId   String
   date      DateTime
-}
-
-enum ActivityStatus {
-  UPCOMING
-  ONGOING
-  DONE
+  coach     Coach          @relation(fields: [coachId], references: [id])
 }
 
 model CoachCV {
@@ -167,7 +137,7 @@ model CoachCV {
   fileSize   Int
   uploadDate DateTime @default(now())
   fileUrl    String
-  coach      Coach    @relation(fields: [coachId], references: [id], name: "CoachDocuments")
+  coach      Coach    @relation("CoachDocuments", fields: [coachId], references: [id])
 }
 
 model Document {
@@ -179,18 +149,18 @@ model Document {
   fileSize   Int
   uploadDate DateTime @default(now())
   fileUrl    String
-  coach      Coach    @relation(fields: [coachId], references: [id], name: "CoachDocuments")
-  course     Course   @relation(fields: [courseId], references: [id], name: "CourseDocuments", onDelete: Cascade)
+  coach      Coach    @relation("CoachDocuments", fields: [coachId], references: [id])
+  course     Course   @relation("CourseDocuments", fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model Career {
   id          String   @id @default(uuid())
   title       String   @unique
   description String
-  coaches     Coach[]  @relation("CoachCareers")
-  cohorts     Cohort[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  cohorts     Cohort[]
+  coaches     Coach[]  @relation("CoachCareers")
 }
 
 model WorkExperience {
@@ -200,34 +170,32 @@ model WorkExperience {
   startDate DateTime
   endDate   DateTime?
   coachId   String
-  coach     Coach     @relation(fields: [coachId], references: [id])
   createdAt DateTime  @default(now())
+  coach     Coach     @relation(fields: [coachId], references: [id])
 }
 
 model Rating {
   id        Int      @id @default(autoincrement())
-  coachId   String // The coach being rated
-  studentId String // The student giving the rating
-  rating    Float // Rating score (e.g., 1-5)
-  createdAt DateTime @default(now()) // When the rating was given
-  coach     Coach    @relation("CoachRatings", fields: [coachId], references: [id]) // Relation to Coach
-  student   Student  @relation("StudentRatings", fields: [studentId], references: [id]) // Corresponding relation
+  coachId   String
+  studentId String
+  rating    Float
+  createdAt DateTime @default(now())
+  coach     Coach    @relation("CoachRatings", fields: [coachId], references: [id])
+  student   Student  @relation("StudentRatings", fields: [studentId], references: [id])
 }
 
-// Event Schema
 model Event {
   id        Int      @id @default(autoincrement())
   title     String
   date      DateTime
   time      String
-  status    String // Available or unavailable
-  userId    String // Should match the type of User.id
-  user      User     @relation(fields: [userId], references: [id]) // Correct relation
+  status    String
+  userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
 
-// RecentActivities Schema
 model RecentActivity {
   id        Int      @id @default(autoincrement())
   userId    String
@@ -236,16 +204,15 @@ model RecentActivity {
   user      User     @relation(fields: [userId], references: [id])
 }
 
-// Meeting Schema
 model Meeting {
   id        Int      @id @default(autoincrement())
   userId    String
   subject   String
   date      DateTime
   time      String
-  status    String // "available", "unavailable"
-  user      User     @relation(fields: [userId], references: [id])
+  status    String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Session {
@@ -254,8 +221,8 @@ model Session {
   startTime    DateTime
   endTime      DateTime
   status       SessionStatus        @default(SCHEDULED)
-  participants SessionParticipant[]
   messages     Message[]
+  participants SessionParticipant[]
 }
 
 model Message {
@@ -263,8 +230,8 @@ model Message {
   content   String
   timestamp DateTime @default(now())
   senderId  String
-  sender    User     @relation(fields: [senderId], references: [id])
   sessionId String
+  sender    User     @relation(fields: [senderId], references: [id])
   session   Session  @relation(fields: [sessionId], references: [id])
 }
 
@@ -272,8 +239,58 @@ model SessionParticipant {
   id        String  @id @default(uuid())
   userId    String
   sessionId String
-  user      User    @relation(fields: [userId], references: [id])
   session   Session @relation(fields: [sessionId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+}
+
+model Cohort {
+  id          String       @id @default(uuid())
+  name        String
+  careerId    String
+  startDate   DateTime
+  endDate     DateTime
+  status      CohortStatus @default(UPCOMING)
+  capacity    Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  career      Career       @relation(fields: [careerId], references: [id])
+  enrollments Enrollment[]
+
+  @@index([careerId])
+}
+
+model Enrollment {
+  id         String           @id @default(uuid())
+  studentId  String
+  cohortId   String
+  enrolledAt DateTime         @default(now())
+  status     EnrollmentStatus @default(PENDING)
+  cohort     Cohort           @relation(fields: [cohortId], references: [id])
+  student    Student          @relation("StudentEnrollments", fields: [studentId], references: [id])
+
+  @@unique([studentId, cohortId])
+  @@index([studentId])
+  @@index([cohortId])
+}
+
+enum ROLE {
+  STUDENT
+  MENTOR
+  ADMIN
+  EMPLOYER
+  FAMILY
+}
+
+enum Status {
+  WAITLIST
+  APPROVED
+  REJECTED
+}
+
+enum ActivityStatus {
+  UPCOMING
+  ONGOING
+  DONE
 }
 
 enum SessionStatus {
@@ -282,44 +299,11 @@ enum SessionStatus {
   COMPLETED
 }
 
-//Cohort related
-
-model Cohort {
-  id          String     @id @default(uuid())
-  name        String
-  career      Career     @relation(fields: [careerId], references: [id])
-  careerId    String
-  startDate   DateTime
-  endDate     DateTime
-  status      CohortStatus @default(UPCOMING)
-  capacity    Int
-  enrollments Enrollment[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([careerId])
-}
-
 enum CohortStatus {
   UPCOMING
   ONGOING
   COMPLETED
 }
-
-model Enrollment {
-  id         String             @id @default(uuid())
-  student    Student            @relation("StudentEnrollments", fields: [studentId], references: [id])
-  studentId  String
-  cohort     Cohort             @relation(fields: [cohortId], references: [id])
-  cohortId   String
-  enrolledAt DateTime           @default(now())
-  status     EnrollmentStatus   @default(PENDING)
-  
-  @@index([studentId])
-  @@index([cohortId])
-  @@unique([studentId, cohortId])
-}
-
 
 enum EnrollmentStatus {
   PENDING
