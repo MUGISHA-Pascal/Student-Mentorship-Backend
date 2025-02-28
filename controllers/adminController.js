@@ -8,54 +8,6 @@ import approveEmail from "../utils/mentorApproveEmail.js";
 import removeEmail from "../utils/mentorRemoveEmail.js";
 import rejectEmail from "../utils/mentorRejectEmail.js";
 
-// export const getAllCoaches = async (req, res) => {
-//   try {
-//     const coaches = await prisma.coach.findMany({
-//       select: {
-//         id: true,
-//         bio: true,
-//         image: true,
-//         user: {
-//           select: {
-//             id: true,
-//             firstName: true,
-//             lastName: true,
-//             email: true,
-//             approved: true,
-//             dob: true,
-//             gender: true,
-//             role: true,
-//             filledForm: true,
-//             filledProfile: true,
-//             createdAt: true,
-//           },
-//         },
-//         career: {
-//           select: {
-//             id: true,
-//             title: true,
-//             description: true,
-//           },
-//         },
-//         workExperience: {
-//           select: {
-//             id: true,
-//             position: true,
-//             company: true,
-//             startDate: true,
-//             endDate: true,
-//           },
-//         },
-//       },
-//     });
-
-//     res.status(200).json(coaches);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Failed to fetch mentors", details: error.message });
-//   }
-// };
-
 export const getAllCoaches = async (req, res) => {
   try {
     // Get page and limit from query params, with defaults
@@ -119,6 +71,145 @@ export const getAllCoaches = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch mentors", details: error.message });
+  }
+};
+
+
+export const getPendingCoaches = async (req, res) => {
+  try {
+    // Get page and limit from query params, with defaults
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    // Fetch total count for pagination metadata
+    const totalCoaches = await prisma.coach.count({
+      where: { user: { approved: false } },
+    });
+
+    // Fetch paginated pending coaches
+    const coaches = await prisma.coach.findMany({
+      skip,
+      take: limit,
+      where: { user: { approved: false } },
+      select: {
+        id: true,
+        bio: true,
+        image: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            approved: true,
+            dob: true,
+            gender: true,
+            role: true,
+            filledForm: true,
+            filledProfile: true,
+            createdAt: true,
+          },
+        },
+        career: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+          },
+        },
+        workExperience: {
+          select: {
+            id: true,
+            position: true,
+            company: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+      },
+    });
+
+    // Send response with pagination info
+    res.status(200).json({
+      data: coaches,
+      currentPage: page,
+      totalPages: Math.ceil(totalCoaches / limit),
+      totalItems: totalCoaches,
+      itemsPerPage: limit,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch pending mentors", details: error.message });
+  }
+};
+
+export const getApprovedCoaches = async (req, res) => {
+  try {
+    // Get page and limit from query params, with defaults
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    // Fetch total count for pagination metadata
+    const totalCoaches = await prisma.coach.count({
+      where: { user: { approved: true } },
+    });
+
+    // Fetch paginated approved mentors
+    const coaches = await prisma.coach.findMany({
+      skip,
+      take: limit,
+      where: { user: { approved: true } },
+      select: {
+        id: true,
+        bio: true,
+        image: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            approved: true,
+            dob: true,
+            gender: true,
+            role: true,
+            filledForm: true,
+            filledProfile: true,
+            createdAt: true,
+          },
+        },
+        career: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+          },
+        },
+        workExperience: {
+          select: {
+            id: true,
+            position: true,
+            company: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+      },
+    });
+
+    // Send response with pagination info
+    res.status(200).json({
+      data: coaches,
+      currentPage: page,
+      totalPages: Math.ceil(totalCoaches / limit),
+      totalItems: totalCoaches,
+      itemsPerPage: limit,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch approved mentors", details: error.message });
   }
 };
 
@@ -383,5 +474,183 @@ export const getAdminStatistics = async (req, res) => {
       error: "Failed to fetch admin statistics",
       details: error.message,
     });
+  }
+};
+
+export const getApprovedStudents = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const totalStudents = await prisma.student.count({
+      where: { user: { approved: true } },
+    });
+
+    const students = await prisma.student.findMany({
+      skip,
+      take: limit,
+      where: { user: { approved: true } },
+      select: {
+        id: true,
+        bio: true,
+        educationLevel: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            approved: true,
+            dob: true,
+            gender: true,
+            role: true,
+            filledForm: true,
+            filledProfile: true,
+          },
+        },
+        enrollments: true,
+      },
+    });
+
+    res.status(200).json({
+      data: students,
+      currentPage: page,
+      totalPages: Math.ceil(totalStudents / limit),
+      totalItems: totalStudents,
+      itemsPerPage: limit,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch approved students", details: error.message });
+  }
+};
+
+export const getPendingStudents = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const totalStudents = await prisma.student.count({
+      where: { user: { approved: false } },
+    });
+
+    const students = await prisma.student.findMany({
+      skip,
+      take: limit,
+      where: { user: { approved: false } },
+      select: {
+        id: true,
+        bio: true,
+        educationLevel: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            approved: true,
+            dob: true,
+            gender: true,
+            role: true,
+            filledForm: true,
+            filledProfile: true,
+          },
+        },
+        enrollments: true,
+      },
+    });
+
+    res.status(200).json({
+      data: students,
+      currentPage: page,
+      totalPages: Math.ceil(totalStudents / limit),
+      totalItems: totalStudents,
+      itemsPerPage: limit,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch unapproved students", details: error.message });
+  }
+};
+
+export const approveStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { email: true, firstName: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { approved: true },
+    });
+
+    await sendEmail(user.email, "Your Student Profile Has Been Approved!", null, approveEmail(user.firstName));
+
+    res.json({ message: "Student approved successfully", user: updatedUser });
+  } catch (error) {
+    console.error("Error approving student:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/// Remove (Unapprove) Student
+export const removeStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { email: true, firstName: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { approved: false },
+    });
+
+    await sendEmail(user.email, "Your Student Profile Has Been Disabled", null, removeEmail(user.firstName));
+
+    res.json({ message: "Student removed (set to unapproved)", user: updatedUser });
+  } catch (error) {
+    console.error("Error removing student:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Reject (Delete) Student
+export const rejectStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { email: true, firstName: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    await prisma.user.delete({ where: { id } });
+
+    await sendEmail(user.email, "Your Student Application Has Been Rejected", null, rejectEmail(user.firstName));
+
+    res.json({ message: "Student rejected and deleted from the system successfully!" });
+  } catch (error) {
+    console.error("Error rejecting student:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL_TEST")
+  url      = env("DATABASE_URL_DEV")
 }
 
 model Blog {
@@ -113,7 +113,7 @@ model Student {
   currentEnrollmentId String?
   enrollments         Enrollment[] @relation("StudentEnrollments")
   ratings             Rating[]     @relation("StudentRatings")
-  user                User         @relation("UserStudent", fields: [userId], references: [id])
+  user                User         @relation("UserStudent", fields: [userId], references: [id], onDelete: Cascade)
   coaches             Coach[]      @relation("CoachStudents")
   courses             Course[]     @relation("CourseStudents")
 }
