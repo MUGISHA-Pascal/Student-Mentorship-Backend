@@ -433,11 +433,11 @@ export const getAdminStatistics = async (req, res) => {
 
     // Count approved & waitlisted students
     const approvedStudents = await prisma.student.count({
-      where: { status: "APPROVED" },
+      where: { user: { approved: true } },
     });
 
     const waitlistedStudents = await prisma.student.count({
-      where: { status: "WAITLIST" },
+      where: { user: { approved: false } },
     });
 
     // Count approved & waitlisted mentors
