@@ -126,11 +126,13 @@ export const loginUser = async (req, res) => {
     }
     const token = generateToken(user);
 
+    const { email: _, password: __, createdAt: ___, updatedAt: ____, ...filteredUser } = user;
+
     res
       .status(200)
       .json({
         message: "Login successful",
-        user,
+        user: filteredUser,
         token
       });
   } catch (error) {
