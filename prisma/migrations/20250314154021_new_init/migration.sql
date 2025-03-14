@@ -10,6 +10,12 @@ CREATE TYPE "ActivityStatus" AS ENUM ('UPCOMING', 'ONGOING', 'DONE');
 -- CreateEnum
 CREATE TYPE "SessionStatus" AS ENUM ('SCHEDULED', 'ONGOING', 'COMPLETED');
 
+-- CreateEnum
+CREATE TYPE "CohortStatus" AS ENUM ('UPCOMING', 'ONGOING', 'COMPLETED');
+
+-- CreateEnum
+CREATE TYPE "EnrollmentStatus" AS ENUM ('PENDING', 'ACTIVE', 'COMPLETED', 'CANCELLED');
+
 -- CreateTable
 CREATE TABLE "Blog" (
     "id" TEXT NOT NULL,
@@ -37,7 +43,6 @@ CREATE TABLE "users" (
     "filledProfile" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "studentId" TEXT,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -88,6 +93,16 @@ CREATE TABLE "Coach" (
 );
 
 -- CreateTable
+CREATE TABLE "Admin" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Admin_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Course" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -101,6 +116,10 @@ CREATE TABLE "Student" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "status" "Status" NOT NULL DEFAULT 'WAITLIST',
+    "bio" TEXT,
+    "educationLevel" TEXT,
+    "image" TEXT,
+    "currentEnrollmentId" TEXT,
 
     CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
 );
@@ -116,6 +135,19 @@ CREATE TABLE "Activity" (
     "date" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Activity_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CoachCV" (
+    "id" TEXT NOT NULL,
+    "coachId" TEXT NOT NULL,
+    "fileName" TEXT NOT NULL,
+    "fileType" TEXT NOT NULL,
+    "fileSize" INTEGER NOT NULL,
+    "uploadDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "fileUrl" TEXT NOT NULL,
+
+    CONSTRAINT "CoachCV_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -236,27 +268,61 @@ CREATE TABLE "SessionParticipant" (
 );
 
 -- CreateTable
+CREATE TABLE "Cohort" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "careerId" TEXT NOT NULL,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3) NOT NULL,
+    "status" "CohortStatus" NOT NULL DEFAULT 'UPCOMING',
+    "capacity" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Cohort_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Enrollment" (
+    "id" TEXT NOT NULL,
+    "studentId" TEXT NOT NULL,
+    "cohortId" TEXT NOT NULL,
+    "enrolledAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "status" "EnrollmentStatus" NOT NULL DEFAULT 'PENDING',
+
+    CONSTRAINT "Enrollment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_CoachCourses" (
     "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_CoachCourses_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
 CREATE TABLE "_CoachStudents" (
     "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_CoachStudents_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
 CREATE TABLE "_CourseStudents" (
     "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_CourseStudents_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
 CREATE TABLE "_CoachCareers" (
     "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_CoachCareers_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -269,40 +335,52 @@ CREATE UNIQUE INDEX "EmailSubscription_email_key" ON "EmailSubscription"("email"
 CREATE UNIQUE INDEX "Coach_userId_key" ON "Coach"("userId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Admin_userId_key" ON "Admin"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Student_userId_key" ON "Student"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_CoachCourses_AB_unique" ON "_CoachCourses"("A", "B");
+CREATE UNIQUE INDEX "Career_title_key" ON "Career"("title");
+
+-- CreateIndex
+CREATE INDEX "Cohort_careerId_idx" ON "Cohort"("careerId");
+
+-- CreateIndex
+CREATE INDEX "Enrollment_studentId_idx" ON "Enrollment"("studentId");
+
+-- CreateIndex
+CREATE INDEX "Enrollment_cohortId_idx" ON "Enrollment"("cohortId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Enrollment_studentId_cohortId_key" ON "Enrollment"("studentId", "cohortId");
 
 -- CreateIndex
 CREATE INDEX "_CoachCourses_B_index" ON "_CoachCourses"("B");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_CoachStudents_AB_unique" ON "_CoachStudents"("A", "B");
-
--- CreateIndex
 CREATE INDEX "_CoachStudents_B_index" ON "_CoachStudents"("B");
-
--- CreateIndex
-CREATE UNIQUE INDEX "_CourseStudents_AB_unique" ON "_CourseStudents"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_CourseStudents_B_index" ON "_CourseStudents"("B");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_CoachCareers_AB_unique" ON "_CoachCareers"("A", "B");
-
--- CreateIndex
 CREATE INDEX "_CoachCareers_B_index" ON "_CoachCareers"("B");
 
 -- AddForeignKey
-ALTER TABLE "Coach" ADD CONSTRAINT "Coach_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Coach" ADD CONSTRAINT "Coach_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Student" ADD CONSTRAINT "Student_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Admin" ADD CONSTRAINT "Admin_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Student" ADD CONSTRAINT "Student_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Activity" ADD CONSTRAINT "Activity_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "Coach"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CoachCV" ADD CONSTRAINT "CoachCV_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "Coach"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Document" ADD CONSTRAINT "Document_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "Coach"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -335,10 +413,19 @@ ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("sende
 ALTER TABLE "Message" ADD CONSTRAINT "Message_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Session"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "SessionParticipant" ADD CONSTRAINT "SessionParticipant_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Session"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "SessionParticipant" ADD CONSTRAINT "SessionParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SessionParticipant" ADD CONSTRAINT "SessionParticipant_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Session"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Cohort" ADD CONSTRAINT "Cohort_careerId_fkey" FOREIGN KEY ("careerId") REFERENCES "Career"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Enrollment" ADD CONSTRAINT "Enrollment_cohortId_fkey" FOREIGN KEY ("cohortId") REFERENCES "Cohort"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Enrollment" ADD CONSTRAINT "Enrollment_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_CoachCourses" ADD CONSTRAINT "_CoachCourses_A_fkey" FOREIGN KEY ("A") REFERENCES "Coach"("id") ON DELETE CASCADE ON UPDATE CASCADE;
