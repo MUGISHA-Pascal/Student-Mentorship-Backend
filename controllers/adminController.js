@@ -232,7 +232,7 @@ export const approveMentor = async (req, res) => {
       data: { approved: true },
     });
 
-    await sendEmail(user.email, "Your Mentor Profile Has Been Approved!", null, approveEmail(user.firstName));
+    await sendEmail(user.email, "Your Mentor Profile Has Been Approved!", null, approveEmail(user.firstName, "Mentor"));
 
     res.json({ message: "Mentor approved successfully", user: updatedUser });
   } catch (error) {
@@ -259,7 +259,7 @@ export const removeMentor = async (req, res) => {
       data: { approved: false },
     });
 
-    await sendEmail(user.email, "Your Mentor Profile Has Been Disabled", null, removeEmail(user.firstName));
+    await sendEmail(user.email, "Your Mentor Profile Has Been Disabled", null, removeEmail(user.firstName, "Mentor"));
 
     res.json({ message: "Mentor removed (set to unapproved)", user: updatedUser });
   } catch (error) {
@@ -283,7 +283,7 @@ export const rejectMentor = async (req, res) => {
 
     await prisma.user.delete({ where: { id } });
 
-    await sendEmail(user.email, "Your Mentor Application Has Been Rejected", null, rejectEmail(user.firstName));
+    await sendEmail(user.email, "Your Mentor Application Has Been Rejected", null, rejectEmail(user.firstName, "Mentor"));
 
     res.json({ message: "Mentor rejected and deleted from the system" });
   } catch (error) {
@@ -593,7 +593,7 @@ export const approveStudent = async (req, res) => {
       data: { approved: true },
     });
 
-    await sendEmail(user.email, "Your Student Profile Has Been Approved!", null, approveEmail(user.firstName));
+    await sendEmail(user.email, "Your Student Profile Has Been Approved!", null, approveEmail(user.firstName, "Student"));
 
     res.json({ message: "Student approved successfully", user: updatedUser });
   } catch (error) {
@@ -621,7 +621,7 @@ export const removeStudent = async (req, res) => {
       data: { approved: false },
     });
 
-    await sendEmail(user.email, "Your Student Profile Has Been Disabled", null, removeEmail(user.firstName));
+    await sendEmail(user.email, "Your Student Profile Has Been Disabled", null, removeEmail(user.firstName, "Student"));
 
     res.json({ message: "Student removed (set to unapproved)", user: updatedUser });
   } catch (error) {
@@ -646,7 +646,7 @@ export const rejectStudent = async (req, res) => {
 
     await prisma.user.delete({ where: { id } });
 
-    await sendEmail(user.email, "Your Student Application Has Been Rejected", null, rejectEmail(user.firstName));
+    await sendEmail(user.email, "Your Student Application Has Been Rejected", null, rejectEmail(user.firstName, "Student"));
 
     res.json({ message: "Student rejected and deleted from the system successfully!" });
   } catch (error) {
