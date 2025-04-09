@@ -10,10 +10,13 @@ datasource db {
 model Blog {
   id          String   @id @default(uuid())
   title       String
+  slug        String   @unique
   description String
   writer      String
   dateCreated DateTime @default(now())
   image       String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model User {
@@ -38,6 +41,7 @@ model User {
   recentActivity RecentActivity[]
   sessions       SessionParticipant[]
   student        Student?             @relation("UserStudent")
+  blogs          Blog[]
 
   @@map("users")
 }
