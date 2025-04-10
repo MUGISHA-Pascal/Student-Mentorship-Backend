@@ -1,13 +1,18 @@
 import { PrismaClient } from "@prisma/client";
 import slugify from 'slugify';
-
+import fs from 'fs';
+import path from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { uploadToS3 } from '../services/aws-s3.js';
 const prisma = new PrismaClient();
 
 
 export const createBlog = async (req, res) => {
-  const { title, description, writer, image } = req.body;
+  const { title, description } = req.body;
+  const userId = req.userId;
 
-  if (!title || !description || !writer) {
+  if (!title || !description || !userId) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -16,35 +21,55 @@ export const createBlog = async (req, res) => {
   }
 
   try {
-    // Generate a unique slug using slugify
+    // Generate a unique slug
     let slug = slugify(title, { lower: true, strict: true });
 
-    // Ensure the slug is unique
     const existingSlug = await prisma.blog.findUnique({
       where: { slug },
     });
 
     if (existingSlug) {
-      slug = `${slug}-${Date.now()}`; // Append timestamp if slug already exists
+      slug = `${slug}-${Date.now()}`;
     }
 
-    // Create blog post
+    let imageUrl = null;
+
+    if (req.file) {
+      // upload to S3 and get the URL
+      imageUrl = await uploadToS3(req.file, 'blog');
+    }
+
+    // Create the blog with the linked user
     const post = await prisma.blog.create({
       data: {
         title,
         description,
-        writer,
-        image: req.file.location,
-        slug, // Include generated slug
+        userId: userId,
+        image: imageUrl,
+        slug,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+          },
+        },
       },
     });
 
-    res.status(201).json({ message: 'Blog created successfully', data: post.id });
+    res.status(201).json({
+      message: 'Blog created successfully',
+      blog: post,
+    });
   } catch (error) {
     console.error('Error during blog creation', error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 export const getAllBlogs = async (req, res) => {
   try {
@@ -66,13 +91,13 @@ export const getAllBlogs = async (req, res) => {
       },
       skip,
       take: limitNumber,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        image: true,
-        dateCreated: true,
-      },
+      // select: {
+      //   id: true,
+      //   title: true,
+      //   description: true,
+      //   image: true,
+      //   dateCreated: true,
+      // },
     });
 
     // Count total blogs
@@ -110,12 +135,11 @@ export const getBlogById = async (req, res) => {
       where: { id: blogId },
       select: {
         id: true,
+        slug: true,
         title: true,
         description: true,
         image: true,
         dateCreated: true,
-        writer: true,
-        slug: true,
       },
     });
 
@@ -123,7 +147,7 @@ export const getBlogById = async (req, res) => {
       return res.status(404).json({ message: `Blog with ID ${blogId} not found` });
     }
 
-    res.status(200).json({ message: 'Success', data: fetchedBlog });
+    res.status(200).json({ message: 'Blog retrieved successfully!', data: fetchedBlog });
 
   } catch (error) {
     console.error('Error while fetching a blog by id', error.message);
@@ -150,12 +174,11 @@ export const findBlogByTitleOrDescription = async (req, res) => {
       orderBy: { dateCreated: 'desc' },
       select: {
         id: true,
+        slug: true,
         title: true,
         description: true,
         image: true,
         dateCreated: true,
-        writer: true,
-        slug: true,
       },
     });
 
@@ -171,10 +194,116 @@ export const findBlogByTitleOrDescription = async (req, res) => {
   }
 };
 
+//   const blogId = req.params.id;
+//   const { title, description, image } = req.body;
+
+//   if (!blogId) {
+//     return res.status(400).json({ message: 'Blog ID is required.' });
+//   }
+
+//   // try {
+//   //   const existingBlog = await prisma.blog.findUnique({
+//   //     where: { id: blogId },
+//   //   });
+
+//   //   if (!existingBlog) {
+//   //     return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
+//   //   }
+
+//   //   // Generate a new slug if the title changes
+//   //   let slug = slugify(title, { lower: true, strict: true });
+
+//   //   // Ensure the new slug is unique
+//   //   const existingSlug = await prisma.blog.findUnique({
+//   //     where: { slug },
+//   //   });
+
+//   //   if (existingSlug && existingSlug.id !== blogId) {
+//   //     slug = `${slug}-${Date.now()}`; // Append timestamp if slug already exists
+//   //   }
+
+//   //   const updatedBlog = await prisma.blog.update({
+//   //     where: { id: blogId },
+//   //     data: {
+//   //       slug, // Include new or updated slug
+//   //       title,
+//   //       description,
+//   //       image,
+//   //     },
+//   //     select: {
+//   //       id: true,
+//   //       slug: true,
+//   //       title: true,
+//   //       description: true,
+//   //       image: true,
+//   //       dateCreated: true,
+//   //     },
+//   //   });
+
+//   //   res.status(200).json({ message: 'Blog updated successfully.', data: updatedBlog });
+//   // } catch (error) {
+//   //   console.error('Error updating blog:', error.message);
+//   //   res.status(500).json({ error: error.message });
+//   // }
+//   // inside your editBlog controller
+
+//   try {
+//     const existingBlog = await prisma.blog.findUnique({
+//       where: { id: blogId },
+//     });
+
+//     if (!existingBlog) {
+//       return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
+//     }
+
+//     let slug = existingBlog.slug; // default to old slug
+
+//     // Only create a new slug if a new title is provided
+//     if (title) {
+//       slug = slugify(title, { lower: true, strict: true });
+
+//       // Ensure the new slug is unique
+//       const existingSlug = await prisma.blog.findUnique({
+//         where: { slug },
+//       });
+
+//       if (existingSlug && existingSlug.id !== blogId) {
+//         slug = `${slug}-${Date.now()}`; // Append timestamp if slug already exists
+//       }
+//     }
+
+//     const updatedBlog = await prisma.blog.update({
+//       where: { id: blogId },
+//       data: {
+//         slug,
+//         ...(title && { title }),
+//         ...(description && { description }),
+//         ...(image && { image }),
+//       },
+//       select: {
+//         id: true,
+//         slug: true,
+//         title: true,
+//         description: true,
+//         image: true,
+//         dateCreated: true,
+//       },
+//     });
+
+//     res.status(200).json({ message: 'Blog updated successfully.', data: updatedBlog });
+
+//   } catch (error) {
+//     console.error('Error updating blog:', error.message);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 export const editBlog = async (req, res) => {
   const blogId = req.params.id;
-  const { title, description, image, writer } = req.body;
+  const { title, description } = req.body;
+
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
 
   if (!blogId) {
     return res.status(400).json({ message: 'Blog ID is required.' });
@@ -189,45 +318,53 @@ export const editBlog = async (req, res) => {
       return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
     }
 
-    // Generate a new slug if the title changes
-    let slug = slugify(title, { lower: true, strict: true });
+    let slug = existingBlog.slug;
 
-    // Ensure the new slug is unique
-    const existingSlug = await prisma.blog.findUnique({
-      where: { slug },
-    });
+    if (title) {
+      slug = slugify(title, { lower: true, strict: true });
 
-    if (existingSlug && existingSlug.id !== blogId) {
-      slug = `${slug}-${Date.now()}`; // Append timestamp if slug already exists
+      const existingSlug = await prisma.blog.findUnique({
+        where: { slug },
+      });
+
+      if (existingSlug && existingSlug.id !== blogId) {
+        slug = `${slug}-${Date.now()}`;
+      }
+    } else {
+      slug = `${slug}-${Date.now()}`; // No title, just append timestamp
+    }
+
+    let imageUrl = existingBlog.image;
+
+    if (req.file) {
+      // If a new image is provided, first delete the old image
+      const oldImagePath = path.join(__dirname, '..', 'blogs', path.basename(existingBlog.image));
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+
+      // Upload the new image
+      const newImageUrl = await uploadToS3(req.file, 'blog');
+      imageUrl = newImageUrl;
     }
 
     const updatedBlog = await prisma.blog.update({
       where: { id: blogId },
       data: {
-        title,
-        description,
-        image,
-        writer,
-        slug, // Include new or updated slug
-      },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        image: true,
-        dateCreated: true,
-        writer: true,
-        slug: true,
+        slug,
+        ...(title && { title }),
+        ...(description && { description }),
+        image: imageUrl,
       },
     });
 
     res.status(200).json({ message: 'Blog updated successfully.', data: updatedBlog });
+
   } catch (error) {
     console.error('Error updating blog:', error.message);
     res.status(500).json({ error: error.message });
   }
 };
-
 
 export const deleteBlog = async (req, res) => {
   const blogId = req.params.id;

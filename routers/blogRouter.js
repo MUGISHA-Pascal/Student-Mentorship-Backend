@@ -1,18 +1,32 @@
 import express from 'express';
+import multer from 'multer';
 import {
   createBlog,
   getAllBlogs,
   getBlogById,
   findBlogByTitleOrDescription,
+  deleteBlog,
+  editBlog,
 } from '../controllers/blogController.js'
-import { uploadImage } from '../services/aws-s3.js';
+import { verifyToken } from '../middleware/auth.js';
 
 export const blogRouter = express.Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+
+
 // Handles the POST for a blog
-blogRouter.post('/create-blog', uploadImage('blog').single('image'), createBlog);
+blogRouter.post('/create-blog', verifyToken, upload.single('image'), createBlog);
 // Handles the GET for all blogs
 blogRouter.get('/get-blogs', getAllBlogs);
 // Handles the GET for a spiecific blog given a valid ID
 blogRouter.get('/get-blog/:id', getBlogById);
 // Handles the GET for a matching blogs using the keywords.
 blogRouter.get('/search-blogs', findBlogByTitleOrDescription);
+
+blogRouter.put('/edit-blog/:id', verifyToken, upload.single('image'), editBlog);
+
+blogRouter.delete('/delete-blog/:id', deleteBlog);
