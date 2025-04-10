@@ -4,8 +4,13 @@ import fs from 'fs';
 import path from 'path';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { nanoid } from 'nanoid';
 import { uploadToS3 } from '../services/aws-s3.js';
 const prisma = new PrismaClient();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 
 
 export const createBlog = async (req, res) => {
@@ -91,13 +96,16 @@ export const getAllBlogs = async (req, res) => {
       },
       skip,
       take: limitNumber,
-      // select: {
-      //   id: true,
-      //   title: true,
-      //   description: true,
-      //   image: true,
-      //   dateCreated: true,
-      // },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+          },
+        },
+      },
     });
 
     // Count total blogs
@@ -133,13 +141,15 @@ export const getBlogById = async (req, res) => {
   try {
     const fetchedBlog = await prisma.blog.findUnique({
       where: { id: blogId },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        description: true,
-        image: true,
-        dateCreated: true,
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+          },
+        },
       },
     });
 
@@ -172,13 +182,15 @@ export const findBlogByTitleOrDescription = async (req, res) => {
         ],
       },
       orderBy: { dateCreated: 'desc' },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        description: true,
-        image: true,
-        dateCreated: true,
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+          },
+        },
       },
     });
 
@@ -302,9 +314,6 @@ export const editBlog = async (req, res) => {
   const blogId = req.params.id;
   const { title, description } = req.body;
 
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-
   if (!blogId) {
     return res.status(400).json({ message: 'Blog ID is required.' });
   }
@@ -328,10 +337,10 @@ export const editBlog = async (req, res) => {
       });
 
       if (existingSlug && existingSlug.id !== blogId) {
-        slug = `${slug}-${Date.now()}`;
+        slug = `${slug}-${nanoid(5)}`;
       }
     } else {
-      slug = `${slug}-${Date.now()}`; // No title, just append timestamp
+      slug = `${slug}-${nanoid(5)}`; // No title, just append timestamp
     }
 
     let imageUrl = existingBlog.image;
@@ -376,17 +385,40 @@ export const deleteBlog = async (req, res) => {
   try {
     const existingBlog = await prisma.blog.findUnique({
       where: { id: blogId },
+      include: {
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
     });
 
     if (!existingBlog) {
       return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
     }
 
+    // Only allow blog owner or admin
+    if (existingBlog.user.id !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({ message: 'Access denied. You can only delete your own blog or be an admin.' });
+    }
+
+    // Delete image from server if exists
+    if (existingBlog.image) {
+      const imagePath = path.join(__dirname, '..', 'blogs', existingBlog.image);
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          console.error('Failed to delete image:', err.message);
+          // Don't throw error here, just log it and continue deleting blog
+        }
+      });
+    }
+
     await prisma.blog.delete({
       where: { id: blogId },
     });
 
-    res.status(200).json({ message: 'Blog deleted successfully.' });
+    res.status(200).json({ message: 'Blog and associated image deleted successfully.' });
 
   } catch (error) {
     console.error('Error deleting blog:', error.message);

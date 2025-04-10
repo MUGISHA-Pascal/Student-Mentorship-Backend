@@ -29,4 +29,4 @@ blogRouter.get('/search-blogs', findBlogByTitleOrDescription);
 
 blogRouter.put('/edit-blog/:id', verifyToken, upload.single('image'), editBlog);
 
-blogRouter.delete('/delete-blog/:id', deleteBlog);
+blogRouter.delete('/delete-blog/:id',  verifyToken, deleteBlog);
