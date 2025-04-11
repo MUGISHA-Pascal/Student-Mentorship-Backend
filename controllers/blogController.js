@@ -14,10 +14,10 @@ const __dirname = dirname(__filename);
 
 
 export const createBlog = async (req, res) => {
-  const { title, description } = req.body;
+  const { title, description, category } = req.body;
   const userId = req.userId;
 
-  if (!title || !description || !userId) {
+  if (!title || !description || !userId || !category) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -49,6 +49,7 @@ export const createBlog = async (req, res) => {
       data: {
         title,
         description,
+        category,
         userId: userId,
         image: imageUrl,
         slug,
@@ -114,7 +115,7 @@ export const getAllBlogs = async (req, res) => {
     const totalPages = Math.ceil(totalCount / limitNumber);
 
     res.status(200).json({
-      message: 'Success',
+      message: 'Blogs retrieved successfully!',
       data: blogs,
       pagination: {
         totalItems: totalCount,
@@ -312,7 +313,7 @@ export const findBlogByTitleOrDescription = async (req, res) => {
 
 export const editBlog = async (req, res) => {
   const blogId = req.params.id;
-  const { title, description } = req.body;
+  const { title, description, category } = req.body;
 
   if (!blogId) {
     return res.status(400).json({ message: 'Blog ID is required.' });
@@ -346,83 +347,85 @@ export const editBlog = async (req, res) => {
     let imageUrl = existingBlog.image;
 
     if (req.file) {
-      // If a new image is provided, first delete the old image
-      const oldImagePath = path.join(__dirname, '..', 'blogs', path.basename(existingBlog.image));
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
+      if (existingBlog.image) {
+        const oldImagePath = path.join(__dirname, '..', 'blogs', path.basename(existingBlog.image));
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+      }
+    }
+
+        // Upload the new image
+        const newImageUrl = await uploadToS3(req.file, 'blog');
+        imageUrl = newImageUrl;
       }
 
-      // Upload the new image
-      const newImageUrl = await uploadToS3(req.file, 'blog');
-      imageUrl = newImageUrl;
+      const updatedBlog = await prisma.blog.update({
+        where: { id: blogId },
+        data: {
+          slug,
+          ...(title && { title }),
+          ...(description && { description }),
+          ...(category && { category }),
+          image: imageUrl,
+        },
+      });
+
+      res.status(200).json({ message: 'Blog updated successfully.', data: updatedBlog });
+
+    } catch (error) {
+      console.error('Error updating blog:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  export const deleteBlog = async (req, res) => {
+    const blogId = req.params.id;
+
+    if (!blogId) {
+      return res.status(400).json({ message: 'Blog ID is required.' });
     }
 
-    const updatedBlog = await prisma.blog.update({
-      where: { id: blogId },
-      data: {
-        slug,
-        ...(title && { title }),
-        ...(description && { description }),
-        image: imageUrl,
-      },
-    });
-
-    res.status(200).json({ message: 'Blog updated successfully.', data: updatedBlog });
-
-  } catch (error) {
-    console.error('Error updating blog:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const deleteBlog = async (req, res) => {
-  const blogId = req.params.id;
-
-  if (!blogId) {
-    return res.status(400).json({ message: 'Blog ID is required.' });
-  }
-
-  try {
-    const existingBlog = await prisma.blog.findUnique({
-      where: { id: blogId },
-      include: {
-        user: {
-          select: {
-            id: true,
+    try {
+      const existingBlog = await prisma.blog.findUnique({
+        where: { id: blogId },
+        include: {
+          user: {
+            select: {
+              id: true,
+            },
           },
         },
-      },
-    });
-
-    if (!existingBlog) {
-      return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
-    }
-
-    // Only allow blog owner or admin
-    if (existingBlog.user.id !== req.userId && req.userRole !== 'ADMIN') {
-      return res.status(403).json({ message: 'Access denied. You can only delete your own blog or be an admin.' });
-    }
-
-    // Delete image from server if exists
-    if (existingBlog.image) {
-      const imagePath = path.join(__dirname, '..', 'blogs', existingBlog.image);
-      fs.unlink(imagePath, (err) => {
-        if (err) {
-          console.error('Failed to delete image:', err.message);
-          // Don't throw error here, just log it and continue deleting blog
-        }
       });
+
+      if (!existingBlog) {
+        return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
+      }
+
+      // Only allow blog owner or admin
+      if (existingBlog.user.id !== req.userId && req.userRole !== 'ADMIN') {
+        return res.status(403).json({ message: 'Access denied. You can only delete your own blog or be an admin.' });
+      }
+
+      // Delete image from server if exists
+      if (existingBlog.image) {
+        const imagePath = path.join(__dirname, '..', 'blogs', existingBlog.image);
+        fs.unlink(imagePath, (err) => {
+          if (err) {
+            console.error('Failed to delete image:', err.message);
+            // Don't throw error here, just log it and continue deleting blog
+          }
+        });
+      }
+
+      await prisma.blog.delete({
+        where: { id: blogId },
+      });
+
+      res.status(200).json({ message: 'Blog and associated image deleted successfully.' });
+
+    } catch (error) {
+      console.error('Error deleting blog:', error.message);
+      res.status(500).json({ error: error.message });
     }
-
-    await prisma.blog.delete({
-      where: { id: blogId },
-    });
-
-    res.status(200).json({ message: 'Blog and associated image deleted successfully.' });
-
-  } catch (error) {
-    console.error('Error deleting blog:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-};
+  };
 

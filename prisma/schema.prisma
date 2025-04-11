@@ -12,6 +12,7 @@ model Blog {
   title       String
   slug        String   @unique
   description String
+  category    String
   dateCreated DateTime @default(now())
   image       String?
   userId      String
