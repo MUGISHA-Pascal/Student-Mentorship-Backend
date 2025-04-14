@@ -71,6 +71,7 @@ export const createBlog = async (req, res) => {
       blog: post,
     });
   } catch (error) {
+    console.log("Error creating ", error)
     console.error('Error during blog creation', error);
     res.status(500).json({ error: error.message });
   }
@@ -132,16 +133,50 @@ export const getAllBlogs = async (req, res) => {
 };
 
 
-export const getBlogById = async (req, res) => {
-  const blogId = req.params.id;
+// export const getBlogById = async (req, res) => {
+//   const blogId = req.params.id;
 
-  if (!blogId) {
-    return res.status(400).json({ message: 'Must include a blog id' });
+//   if (!blogId) {
+//     return res.status(400).json({ message: 'Must include a blog id' });
+//   }
+
+//   try {
+//     const fetchedBlog = await prisma.blog.findUnique({
+//       where: { id: blogId },
+//       include: {
+//         user: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             role: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (!fetchedBlog) {
+//       return res.status(404).json({ message: `Blog with ID ${blogId} not found` });
+//     }
+
+//     res.status(200).json({ message: 'Blog retrieved successfully!', data: fetchedBlog });
+
+//   } catch (error) {
+//     console.error('Error while fetching a blog by id', error.message);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+export const getBlogBySlug = async (req, res) => {
+  const blogSlug = req.params.slug;
+
+  if (!blogSlug) {
+    return res.status(400).json({ message: 'Must include a blog slug' });
   }
 
   try {
     const fetchedBlog = await prisma.blog.findUnique({
-      where: { id: blogId },
+      where: { slug: blogSlug }, // 🔥 use slug instead of id
       include: {
         user: {
           select: {
@@ -155,16 +190,17 @@ export const getBlogById = async (req, res) => {
     });
 
     if (!fetchedBlog) {
-      return res.status(404).json({ message: `Blog with ID ${blogId} not found` });
+      return res.status(404).json({ message: `Blog with slug "${blogSlug}" not found` });
     }
 
     res.status(200).json({ message: 'Blog retrieved successfully!', data: fetchedBlog });
 
   } catch (error) {
-    console.error('Error while fetching a blog by id', error.message);
+    console.error('Error while fetching a blog by slug', error.message);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 export const findBlogByTitleOrDescription = async (req, res) => {
@@ -207,109 +243,6 @@ export const findBlogByTitleOrDescription = async (req, res) => {
   }
 };
 
-//   const blogId = req.params.id;
-//   const { title, description, image } = req.body;
-
-//   if (!blogId) {
-//     return res.status(400).json({ message: 'Blog ID is required.' });
-//   }
-
-//   // try {
-//   //   const existingBlog = await prisma.blog.findUnique({
-//   //     where: { id: blogId },
-//   //   });
-
-//   //   if (!existingBlog) {
-//   //     return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
-//   //   }
-
-//   //   // Generate a new slug if the title changes
-//   //   let slug = slugify(title, { lower: true, strict: true });
-
-//   //   // Ensure the new slug is unique
-//   //   const existingSlug = await prisma.blog.findUnique({
-//   //     where: { slug },
-//   //   });
-
-//   //   if (existingSlug && existingSlug.id !== blogId) {
-//   //     slug = `${slug}-${Date.now()}`; // Append timestamp if slug already exists
-//   //   }
-
-//   //   const updatedBlog = await prisma.blog.update({
-//   //     where: { id: blogId },
-//   //     data: {
-//   //       slug, // Include new or updated slug
-//   //       title,
-//   //       description,
-//   //       image,
-//   //     },
-//   //     select: {
-//   //       id: true,
-//   //       slug: true,
-//   //       title: true,
-//   //       description: true,
-//   //       image: true,
-//   //       dateCreated: true,
-//   //     },
-//   //   });
-
-//   //   res.status(200).json({ message: 'Blog updated successfully.', data: updatedBlog });
-//   // } catch (error) {
-//   //   console.error('Error updating blog:', error.message);
-//   //   res.status(500).json({ error: error.message });
-//   // }
-//   // inside your editBlog controller
-
-//   try {
-//     const existingBlog = await prisma.blog.findUnique({
-//       where: { id: blogId },
-//     });
-
-//     if (!existingBlog) {
-//       return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
-//     }
-
-//     let slug = existingBlog.slug; // default to old slug
-
-//     // Only create a new slug if a new title is provided
-//     if (title) {
-//       slug = slugify(title, { lower: true, strict: true });
-
-//       // Ensure the new slug is unique
-//       const existingSlug = await prisma.blog.findUnique({
-//         where: { slug },
-//       });
-
-//       if (existingSlug && existingSlug.id !== blogId) {
-//         slug = `${slug}-${Date.now()}`; // Append timestamp if slug already exists
-//       }
-//     }
-
-//     const updatedBlog = await prisma.blog.update({
-//       where: { id: blogId },
-//       data: {
-//         slug,
-//         ...(title && { title }),
-//         ...(description && { description }),
-//         ...(image && { image }),
-//       },
-//       select: {
-//         id: true,
-//         slug: true,
-//         title: true,
-//         description: true,
-//         image: true,
-//         dateCreated: true,
-//       },
-//     });
-
-//     res.status(200).json({ message: 'Blog updated successfully.', data: updatedBlog });
-
-//   } catch (error) {
-//     console.error('Error updating blog:', error.message);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 
 export const editBlog = async (req, res) => {
   const blogId = req.params.id;
@@ -351,81 +284,81 @@ export const editBlog = async (req, res) => {
         const oldImagePath = path.join(__dirname, '..', 'blogs', path.basename(existingBlog.image));
         if (fs.existsSync(oldImagePath)) {
           fs.unlinkSync(oldImagePath);
-      }
-    }
-
-        // Upload the new image
-        const newImageUrl = await uploadToS3(req.file, 'blog');
-        imageUrl = newImageUrl;
+        }
       }
 
-      const updatedBlog = await prisma.blog.update({
-        where: { id: blogId },
-        data: {
-          slug,
-          ...(title && { title }),
-          ...(description && { description }),
-          ...(category && { category }),
-          image: imageUrl,
-        },
-      });
-
-      res.status(200).json({ message: 'Blog updated successfully.', data: updatedBlog });
-
-    } catch (error) {
-      console.error('Error updating blog:', error.message);
-      res.status(500).json({ error: error.message });
-    }
-  };
-
-  export const deleteBlog = async (req, res) => {
-    const blogId = req.params.id;
-
-    if (!blogId) {
-      return res.status(400).json({ message: 'Blog ID is required.' });
+      // Upload the new image
+      const newImageUrl = await uploadToS3(req.file, 'blog');
+      imageUrl = newImageUrl;
     }
 
-    try {
-      const existingBlog = await prisma.blog.findUnique({
-        where: { id: blogId },
-        include: {
-          user: {
-            select: {
-              id: true,
-            },
+    const updatedBlog = await prisma.blog.update({
+      where: { id: blogId },
+      data: {
+        slug,
+        ...(title && { title }),
+        ...(description && { description }),
+        ...(category && { category }),
+        image: imageUrl,
+      },
+    });
+
+    res.status(200).json({ message: 'Blog updated successfully.', data: updatedBlog });
+
+  } catch (error) {
+    console.error('Error updating blog:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteBlog = async (req, res) => {
+  const blogId = req.params.id;
+
+  if (!blogId) {
+    return res.status(400).json({ message: 'Blog ID is required.' });
+  }
+
+  try {
+    const existingBlog = await prisma.blog.findUnique({
+      where: { id: blogId },
+      include: {
+        user: {
+          select: {
+            id: true,
           },
         },
-      });
+      },
+    });
 
-      if (!existingBlog) {
-        return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
-      }
-
-      // Only allow blog owner or admin
-      if (existingBlog.user.id !== req.userId && req.userRole !== 'ADMIN') {
-        return res.status(403).json({ message: 'Access denied. You can only delete your own blog or be an admin.' });
-      }
-
-      // Delete image from server if exists
-      if (existingBlog.image) {
-        const imagePath = path.join(__dirname, '..', 'blogs', existingBlog.image);
-        fs.unlink(imagePath, (err) => {
-          if (err) {
-            console.error('Failed to delete image:', err.message);
-            // Don't throw error here, just log it and continue deleting blog
-          }
-        });
-      }
-
-      await prisma.blog.delete({
-        where: { id: blogId },
-      });
-
-      res.status(200).json({ message: 'Blog and associated image deleted successfully.' });
-
-    } catch (error) {
-      console.error('Error deleting blog:', error.message);
-      res.status(500).json({ error: error.message });
+    if (!existingBlog) {
+      return res.status(404).json({ message: `Blog with ID ${blogId} not found.` });
     }
-  };
+
+    // Only allow blog owner or admin
+    if (existingBlog.user.id !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({ message: 'Access denied. You can only delete your own blog or be an admin.' });
+    }
+
+    // Delete image from server if exists
+    if (existingBlog.image) {
+      const imagePath = path.join(__dirname, '..', 'blogs', existingBlog.image);
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          console.error('Failed to delete image:', err.message);
+          // Don't throw error here, just log it and continue deleting blog
+        }
+      });
+    }
+
+    await prisma.blog.delete({
+      where: { id: blogId },
+    });
+
+    res.status(200).json({ message: 'Blog and associated image deleted successfully.' });
+
+  } catch (error) {
+    console.error('Error deleting blog:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
 
