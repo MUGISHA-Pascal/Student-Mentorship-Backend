@@ -21,6 +21,7 @@ import { recordingRouter } from "./routers/recordingRouter.js";
 import {participantRouter} from './routers/participantRouter.js';
 import { videoCallRouter } from "./routers/videoCallRouter.js";
 import { adminRouter } from "./routers/adminRouter.js";
+import { meetingsRouter } from "./routers/meetingsRouter.js";
 
 
 dotenv.config();
@@ -61,6 +62,7 @@ app.use('/api/v1/student', studentRouter);
 app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/document', documentRouter);
 app.use('/api/v1/blog', blogRouter)
+app.use('/api/v1/meetings', meetingsRouter);
 app.use('/api/session', sessionRouter);
 app.use('/api/message', messageRouter);
 app.use('/api/recording', recordingRouter)
