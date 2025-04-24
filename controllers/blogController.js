@@ -17,9 +17,26 @@ export const createBlog = async (req, res) => {
   const { title, description, category } = req.body;
   const userId = req.userId;
 
+  console.log("Incoming blog creation request:");
+  console.log("Title:", title);
+  console.log("Description:", description);
+  console.log("Category:", category);
+  console.log("User ID:", userId);
+  console.log("File:", req.file);
+
   if (!title || !description || !userId || !category) {
+    console.log("Missing fields:", {
+      titleMissing: !title,
+      descriptionMissing: !description,
+      categoryMissing: !category,
+      userIdMissing: !userId,
+    });
     return res.status(400).json({ error: 'Missing required fields' });
   }
+
+  // if (!title || !description || !userId || !category) {
+  //   return res.status(400).json({ error: 'Missing required fields' });
+  // }
 
   if (title.length > 255) {
     return res.status(400).json({ error: 'Title must be less than 255 characters' });
