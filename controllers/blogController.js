@@ -150,40 +150,6 @@ export const getAllBlogs = async (req, res) => {
 };
 
 
-// export const getBlogById = async (req, res) => {
-//   const blogId = req.params.id;
-
-//   if (!blogId) {
-//     return res.status(400).json({ message: 'Must include a blog id' });
-//   }
-
-//   try {
-//     const fetchedBlog = await prisma.blog.findUnique({
-//       where: { id: blogId },
-//       include: {
-//         user: {
-//           select: {
-//             id: true,
-//             firstName: true,
-//             lastName: true,
-//             role: true,
-//           },
-//         },
-//       },
-//     });
-
-//     if (!fetchedBlog) {
-//       return res.status(404).json({ message: `Blog with ID ${blogId} not found` });
-//     }
-
-//     res.status(200).json({ message: 'Blog retrieved successfully!', data: fetchedBlog });
-
-//   } catch (error) {
-//     console.error('Error while fetching a blog by id', error.message);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
 export const getBlogBySlug = async (req, res) => {
   const blogSlug = req.params.slug;
 
@@ -217,7 +183,6 @@ export const getBlogBySlug = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 
 export const findBlogByTitleOrDescription = async (req, res) => {
