@@ -15,8 +15,7 @@ export const RegisterUser = async (req, res) => {
     return res.status(400).json({ error: error.details[0].message });
   }
 
-  const { firstName, lastName, email, dob, gender, password, role } =
-    value;
+  const { firstName, lastName, email, dob, gender, password, role } = value;
 
   try {
     const user = await prisma.user.findUnique({
@@ -38,7 +37,7 @@ export const RegisterUser = async (req, res) => {
         dob,
         gender,
         password: hashedPassword,
-        role: ROLE[role.toUpperCase()]
+        role: ROLE[role.toUpperCase()],
       },
     });
 
@@ -48,8 +47,8 @@ export const RegisterUser = async (req, res) => {
       createdNewProfile = await prisma.coach.create({
         data: {
           userId: newUser.id, // Link the coach to the user
-          bio: null,  // Leave bio as null for later updates
-          image: null,  // Leave image as null for later updates
+          bio: null, // Leave bio as null for later updates
+          image: null, // Leave image as null for later updates
         },
       });
     } else if (role.toUpperCase() === "STUDENT") {
@@ -66,23 +65,16 @@ export const RegisterUser = async (req, res) => {
       });
     }
 
-    const subject = 'Welcome to GOYA!';
+    const subject = "Welcome to GOYA!";
     const htmlContent = emailTemplate();
 
-    await sendEmail(
-      email,
-      subject,
-      null,
-      htmlContent
-    );
+    await sendEmail(email, subject, null, htmlContent);
 
-    res
-      .status(201)
-      .json({
-        message: "User created successfully",
-        user: newUser,
-        profile: createdNewProfile
-      });
+    res.status(201).json({
+      message: "User created successfully",
+      user: newUser,
+      profile: createdNewProfile,
+    });
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -103,6 +95,7 @@ export const loginUser = async (req, res) => {
       where: { email },
       // Optionally, include the student record in the same query:
       include: {
+        coach: { include: { activities: true } },
         student: {
           include: {
             enrollments: {
@@ -111,9 +104,9 @@ export const loginUser = async (req, res) => {
                 cohort: true,
               },
             },
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -126,15 +119,19 @@ export const loginUser = async (req, res) => {
     }
     const token = generateToken(user);
 
-    const { email: _, password: __, createdAt: ___, updatedAt: ____, ...filteredUser } = user;
+    const {
+      email: _,
+      password: __,
+      createdAt: ___,
+      updatedAt: ____,
+      ...filteredUser
+    } = user;
 
-    res
-      .status(200)
-      .json({
-        message: "Login successful",
-        user: filteredUser,
-        token
-      });
+    res.status(200).json({
+      message: "Login successful",
+      user: filteredUser,
+      token,
+    });
   } catch (error) {
     console.error("Error during login:", error);
     res.status(500).json({ error: "Internal server error" });
