@@ -250,7 +250,79 @@ export const getRecentActivities = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+export const getCohorts = async (req, res) => {
+  try {
+    const cohorts = await prisma.cohort.findMany();
+    res.json(cohorts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching careers" });
+  }
+};
+export const updateCohort = async (req, res) => {
+  const { id } = req.params;
+  const { name, startDate, endDate, careerId, status, capacity } = req.body; // New career data
 
+  try {
+    const cohort = await prisma.cohort.update({
+      where: { id },
+      data: {
+        name,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        careerId,
+        status,
+        capacity,
+      },
+    });
+
+    if (!cohort) {
+      return res.status(404).json({ message: "cohort not found" });
+    }
+
+    res.json(cohort);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating cohort" });
+  }
+};
+export const addCohort = async (req, res) => {
+  const { name, startDate, endDate, careerId, status, capacity } = req.body;
+  try {
+    const cohort = await prisma.cohort.create({
+      data: {
+        name,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        careerId,
+        status,
+        capacity,
+      },
+    });
+
+    res.json(cohort);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error creating career" });
+  }
+};
+export const deleteCohort = async (req, res) => {
+  const { id } = req.params; // id is the coach ID, careerId is the career to delete
+
+  try {
+    // First, you could check if the coach exists
+    const cohort = await prisma.cohort.findUnique({
+      where: { id },
+    });
+
+    if (!cohort) {
+      return res.status(404).json({ message: "cohort not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error deleting cohort" });
+  }
+};
 export const createnNewCareer = async (req, res) => {
   const { title, description } = req.body;
   try {

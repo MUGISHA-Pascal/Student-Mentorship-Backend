@@ -27,6 +27,10 @@ import {
   createnNewCareer,
   deleteCareerById,
   updateNewCareer,
+  getCohorts,
+  updateCohort,
+  addCohort,
+  deleteCohort,
 } from "../controllers/coachController.js"; // Importing controller functions
 import multer from "multer";
 
@@ -52,7 +56,11 @@ coachRouter.get("/:id/activity", getCoachActivities);
 coachRouter.post("/:id/activity", createCoachActivity); // Add new activity
 coachRouter.put("/:id/activity/:activityId", updateCoachActivity); // Update activity
 coachRouter.delete("/:id/activity/:activityId", deleteCoachActivity); // Delete activity
-
+//get cohorts
+coachRouter.get("/cohorts", getCohorts);
+coachRouter.put("/update-cohort/:id", updateCohort);
+coachRouter.post("/add-cohort", addCohort);
+coachRouter.delete("/delete-cohort/:id", deleteCohort);
 // 5. Fetch recent activities
 coachRouter.get("/:id/recent-activities", getRecentActivities);
 // 6. Careers and work experience routes
