@@ -307,11 +307,11 @@ export const addCohort = async (req, res) => {
   }
 };
 export const deleteCohort = async (req, res) => {
-  const { id } = req.params; // id is the coach ID, careerId is the career to delete
+  const { id } = req.params;
 
   try {
     // First, you could check if the coach exists
-    const cohort = await prisma.cohort.findUnique({
+    const cohort = await prisma.cohort.delete({
       where: { id },
     });
 
