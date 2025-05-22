@@ -306,6 +306,30 @@ export const addCohort = async (req, res) => {
     res.status(500).json({ message: "Error creating career" });
   }
 };
+export const getCohortsByCareerId = async (req, res) => {
+  const { careerId } = req.params;
+  try {
+    const cohorts = await prisma.cohort.findMany({
+      where: { careerId },
+    });
+    res.json(cohorts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching careers" });
+  }
+};
+export const getCoursesByCareerId = async (req, res) => {
+  const { careerId } = req.params;
+  try {
+    const courses = await prisma.course.findMany({
+      where: { coaches: { some: { career: { some: { id: careerId } } } } },
+    });
+    res.json(courses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching courses" });
+  }
+};
 export const deleteCohort = async (req, res) => {
   const { id } = req.params;
 

@@ -31,6 +31,8 @@ import {
   updateCohort,
   addCohort,
   deleteCohort,
+  getCohortsByCareerId,
+  getCoursesByCareerId,
 } from "../controllers/coachController.js"; // Importing controller functions
 import multer from "multer";
 
@@ -50,6 +52,8 @@ coachRouter.delete("/coaches/:id", deleteCoach);
 
 //2. Fetch coach statistics and performance
 coachRouter.get("/:id/statistics", getCoachStatisticsAndPerformance);
+//course
+coachRouter.get("/coursesByCareerId/:careerId", getCoursesByCareerId);
 
 // 4. Fetch activities
 coachRouter.get("/:id/activity", getCoachActivities);
@@ -58,6 +62,7 @@ coachRouter.put("/:id/activity/:activityId", updateCoachActivity); // Update act
 coachRouter.delete("/:id/activity/:activityId", deleteCoachActivity); // Delete activity
 //get cohorts
 coachRouter.get("/cohorts", getCohorts);
+coachRouter.get("/cohortByCareerId/:careerId", getCohortsByCareerId);
 coachRouter.put("/update-cohort/:id", updateCohort);
 coachRouter.post("/add-cohort", addCohort);
 coachRouter.delete("/delete-cohort/:id", deleteCohort);
