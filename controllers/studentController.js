@@ -1033,13 +1033,34 @@ export const sendRequestToCoach = async (req, res) => {
 // };
 export const assignMentor = async (req, res) => {
   const { studentId, mentorId, cohortId, courseId } = req.body;
-  console.log("Assigning mentor:", studentId, mentorId, cohortId, courseId);
-  const user = prisma.student.update({
-    where: { userId: studentId },
-    data: { coachId: mentorId },
-  });
-  res.json(user);
+
+  try {
+    console.log("Assigning mentor:", studentId, mentorId, cohortId, courseId);
+
+    const userFound = await prisma.student.findUnique({
+      where: { userId: studentId },
+    });
+
+    if (!userFound) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    const mentorFound = await prisma.user.findUnique({
+      where: { id: mentorId },
+      include: { coach: true },
+    });
+    console.log("Mentor found:", mentorFound);
+    const user = await prisma.student.update({
+      where: { id: userFound.id },
+      data: { coachId: mentorFound.coach.id },
+    });
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error assigning mentor:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
+
 export const enrollStudent = async (req, res) => {
   const { studentId, careerId } = req.body;
 

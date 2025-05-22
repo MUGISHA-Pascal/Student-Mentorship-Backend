@@ -98,6 +98,7 @@ export const loginUser = async (req, res) => {
         coach: { include: { activities: true } },
         student: {
           include: {
+            coach: { include: { user: true } },
             enrollments: {
               where: { status: "ACTIVE" }, // Fetch only active enrollments
               include: {
