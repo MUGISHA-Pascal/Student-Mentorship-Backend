@@ -26,7 +26,7 @@ export const createCourseWithDocument = async (req, res) => {
       data: {
         name: courseName,
         coaches: {
-          connect: { id: coachId },
+          connect: { userId: coachId },
         },
         careerId,
         description,

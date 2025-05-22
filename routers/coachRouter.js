@@ -33,6 +33,7 @@ import {
   deleteCohort,
   getCohortsByCareerId,
   getCoursesByCareerId,
+  getMentorsByCourseId,
 } from "../controllers/coachController.js"; // Importing controller functions
 import multer from "multer";
 
@@ -54,6 +55,7 @@ coachRouter.delete("/coaches/:id", deleteCoach);
 coachRouter.get("/:id/statistics", getCoachStatisticsAndPerformance);
 //course
 coachRouter.get("/coursesByCareerId/:careerId", getCoursesByCareerId);
+coachRouter.get("/mentorsByCourseId/:courseId", getMentorsByCourseId);
 
 // 4. Fetch activities
 coachRouter.get("/:id/activity", getCoachActivities);

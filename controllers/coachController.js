@@ -318,12 +318,27 @@ export const getCohortsByCareerId = async (req, res) => {
     res.status(500).json({ message: "Error fetching careers" });
   }
 };
+export const getMentorsByCourseId = async (req, res) => {
+  const { courseId } = req.params;
+  try {
+    const mentors = await prisma.user.findMany({
+      where: { coach: { courses: { some: { id: courseId } } } },
+      include: { coach: true },
+    });
+    console.log("mentors found", mentors);
+    res.json(mentors);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching mentors" });
+  }
+};
 export const getCoursesByCareerId = async (req, res) => {
   const { careerId } = req.params;
   try {
     const courses = await prisma.course.findMany({
-      where: { coaches: { some: { career: { some: { id: careerId } } } } },
+      where: { careerId },
     });
+    console.log("courses found", courses);
     res.json(courses);
   } catch (error) {
     console.error(error);
