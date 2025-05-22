@@ -105,7 +105,10 @@ model Course {
   documents   Document[] @relation("CourseDocuments")
   coaches     Coach[]    @relation("CoachCourses")
   students    Student[]  @relation("CourseStudents")
+  careerId    String?
+  career      Career?    @relation(fields: [careerId], references: [id])
 }
+
 
 model Student {
   id                  String       @id @default(uuid())
@@ -165,6 +168,7 @@ model Career {
   updatedAt   DateTime @updatedAt
   cohorts     Cohort[]
   coaches     Coach[]  @relation("CoachCareers")
+    courses     Course[] 
 }
 
 model WorkExperience {
