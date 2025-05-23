@@ -187,7 +187,8 @@ model Rating {
   id        Int      @id @default(autoincrement())
   coachId   String
   studentId String
-  rating    Float
+  review     String?
+  rating    Float?
   createdAt DateTime @default(now())
   coach     Coach    @relation("CoachRatings", fields: [coachId], references: [id])
   student   Student  @relation("StudentRatings", fields: [studentId], references: [id])
