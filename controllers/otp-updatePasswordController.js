@@ -2,11 +2,30 @@ import { PrismaClient } from "@prisma/client";
 import speakeasy from "speakeasy";
 import sendEmail from "../utils/sendEmail.js";
 import bcrypt from "bcryptjs";
-import otpTemplate from "../utils/otpTemplate.js"
+import otpTemplate from "../utils/otpTemplate.js";
 import successPasswordTemplate from "../utils/successPasswordTemplate.js";
 
 const prisma = new PrismaClient();
-
+export const getUserById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { student: { include: { coach: true } } },
+    });
+    if (!user) {
+      return res.status(404).json({
+        message: "user not found",
+        data: null,
+      });
+    }
+    console.log("user found", user);
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+    throw new Error("error while fetching user");
+  }
+};
 export const generateOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -36,12 +55,7 @@ export const generateOtp = async (req, res) => {
     // );
     const subject = "OTP for Password Reset";
     const htmlContent = otpTemplate(otp);
-    await sendEmail(
-      email,
-      subject,
-      null,
-      htmlContent
-    );
+    await sendEmail(email, subject, null, htmlContent);
     // Save OTP details to the database
     const otpRecord = await prisma.oTP.create({
       data: {
@@ -107,7 +121,6 @@ export const validateAndVerifyOtp = async (req, res) => {
   }
 };
 
-
 export const updatePassword = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -133,12 +146,7 @@ export const updatePassword = async (req, res) => {
     // );
     const subject = "Password Successfully Updated";
     const htmlContent = successPasswordTemplate();
-    await sendEmail(
-      email,
-      subject,
-      null,
-      htmlContent
-    );
+    await sendEmail(email, subject, null, htmlContent);
     const newPassword = await bcrypt.hash(password, 10);
     const updatedPassword = await prisma.user.update({
       where: {
