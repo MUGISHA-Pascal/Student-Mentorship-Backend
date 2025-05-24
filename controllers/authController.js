@@ -95,7 +95,7 @@ export const loginUser = async (req, res) => {
       where: { email },
       // Optionally, include the student record in the same query:
       include: {
-        coach: { include: { activities: true } },
+        coach: { include: { activities: true, user: true } },
         student: {
           include: {
             coach: { include: { user: true } },

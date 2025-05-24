@@ -36,7 +36,7 @@ model User {
   admin          Admin?               @relation("UserAdmin")
   coach          Coach?               @relation("UserCoach")
   events         Event[]
-  metting        Meeting[]
+  meeting        Meeting[]
   messages       Message[]
   recentActivity RecentActivity[]
   sessions       SessionParticipant[]

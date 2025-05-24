@@ -1052,9 +1052,13 @@ export const assignMentor = async (req, res) => {
     console.log("Mentor found:", mentorFound);
     const user = await prisma.student.update({
       where: { id: userFound.id },
-      data: { coachId: mentorFound.coach.id },
+      include: { coach: { include: { user: true } } },
+      data: {
+        // coachId: mentorFound.coach.id,
+        coach: { connect: { id: mentorFound.coach.id } },
+      },
     });
-
+    console.log("User after update:", user);
     res.json(user);
   } catch (error) {
     console.error("Error assigning mentor:", error);
