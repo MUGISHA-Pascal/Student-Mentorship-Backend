@@ -33,7 +33,7 @@ export const getCoachStatisticsAndPerformance = async (req, res) => {
     const coach = await prisma.coach.findUnique({
       where: { id },
       include: {
-        students: true,
+        // students: true,
         courses: true,
         activities: true,
         ratings: {

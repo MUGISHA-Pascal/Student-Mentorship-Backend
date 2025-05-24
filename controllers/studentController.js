@@ -767,6 +767,7 @@ export const getAvailableCareers = async (req, res) => {
         title: true,
         description: true,
       },
+      where: { cohorts: { some: { status: "UPCOMING" } } },
     });
     res.json(careers);
   } catch (error) {

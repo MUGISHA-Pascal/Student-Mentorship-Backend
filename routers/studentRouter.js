@@ -38,6 +38,7 @@ import {
   assignMentor,
 } from "../controllers/studentController.js";
 import multer from "multer";
+import { getCareers } from "../controllers/coachController.js";
 
 export const studentRouter = express.Router();
 const upload = multer({ dest: "uploads/" });
@@ -144,5 +145,5 @@ studentRouter.put(`/assign-mentor`, assignMentor);
 // Cohort management routes (admin)
 studentRouter.get("/cohorts", getCohorts);
 studentRouter.post("/cohorts", createCohort);
-
+studentRouter.get("/get-careers", getCareers);
 studentRouter.post("/jotform", jotFormHook);
