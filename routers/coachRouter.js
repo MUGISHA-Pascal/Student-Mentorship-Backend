@@ -34,6 +34,7 @@ import {
   getCohortsByCareerId,
   getCoursesByCareerId,
   getMentorsByCourseId,
+  getMentors,
 } from "../controllers/coachController.js"; // Importing controller functions
 import multer from "multer";
 
@@ -56,7 +57,7 @@ coachRouter.get("/:id/statistics", getCoachStatisticsAndPerformance);
 //course
 coachRouter.get("/coursesByCareerId/:careerId", getCoursesByCareerId);
 coachRouter.get("/mentorsByCourseId/:courseId", getMentorsByCourseId);
-
+coachRouter.get("/get-mentors", getMentors);
 // 4. Fetch activities
 coachRouter.get("/:id/activity", getCoachActivities);
 coachRouter.post("/:id/activity", createCoachActivity); // Add new activity

@@ -87,8 +87,9 @@ model Coach {
   workExperience WorkExperience[]
   career         Career[]         @relation("CoachCareers")
   courses        Course[]         @relation("CoachCourses")
-  student        Student?         @relation("StudentCoach") // one-to-one inverse
+  students       Student[]        @relation("CoachStudents") 
 }
+
 
 model Admin {
   id        String   @id @default(uuid())
@@ -113,18 +114,21 @@ model Course {
 model Student {
   id                  String       @id @default(uuid())
   userId              String       @unique
-  coachId             String?      @unique // Ensures one-to-one
+  coachId             String?      // REMOVED @unique
   status              Status       @default(WAITLIST)
   bio                 String?
   educationLevel      String?
+  approved             Boolean      @default(false)
   image               String?
+  addedMentor           Boolean      @default(false)
   currentEnrollmentId String?
   enrollments         Enrollment[] @relation("StudentEnrollments")
   ratings             Rating[]     @relation("StudentRatings")
   user                User         @relation("UserStudent", fields: [userId], references: [id], onDelete: Cascade)
-  coach               Coach?       @relation("StudentCoach", fields: [coachId], references: [id])
+  coach               Coach?       @relation("CoachStudents", fields: [coachId], references: [id]) 
   courses             Course[]     @relation("CourseStudents")
 }
+
 
 model Activity {
   id        String         @id @default(uuid())

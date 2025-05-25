@@ -126,7 +126,26 @@ export const getCoachStatisticsAndPerformance = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+export const getMentors = async (req, res) => {
+  try {
+    const mentors = await prisma.user.findMany({
+      where: {
+        coach: {
+          isNot: null,
+        },
+      },
+      include: {
+        coach: true,
+      },
+    });
 
+    console.log("mentors found", mentors);
+    res.json(mentors);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching mentors" });
+  }
+};
 // 3. Fetch all activities of a coach
 export const getCoachActivities = async (req, res) => {
   const { id } = req.params;
