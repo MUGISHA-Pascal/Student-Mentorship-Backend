@@ -27,7 +27,7 @@ export const getPendingStudents = async (req, res) => {
   try {
     const { coachId } = req.params;
     const students = await prisma.student.findMany({
-      where: { coach: { id: coachId }, user: { approved: false } },
+      where: { coach: { id: coachId }, approved: false },
       include: { user: true },
     });
     console.log(students);
@@ -259,17 +259,9 @@ export const deleteCoachActivity = async (req, res) => {
 export const rejectStudent = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const student = await prisma.student.findUnique({
+    const user = await prisma.student.update({
       where: { id: studentId },
       include: { user: true },
-    });
-
-    if (!student || !student.user?.id) {
-      throw new Error("User not found for this student");
-    }
-
-    const user = await prisma.user.update({
-      where: { id: student.user.id },
       data: { approved: false },
     });
     res.json({ message: "Student rejected successfully", user });
@@ -281,19 +273,12 @@ export const rejectStudent = async (req, res) => {
 export const approveStudent = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const student = await prisma.student.findUnique({
+    const user = await prisma.student.update({
       where: { id: studentId },
       include: { user: true },
-    });
-
-    if (!student || !student.user?.id) {
-      throw new Error("User not found for this student");
-    }
-
-    const user = await prisma.user.update({
-      where: { id: student.user.id },
       data: { approved: true },
     });
+
     res.json({ message: "Student approved successfully", user });
   } catch (error) {
     console.log(error);
