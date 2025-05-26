@@ -35,6 +35,9 @@ import {
   getCoursesByCareerId,
   getMentorsByCourseId,
   getMentors,
+  getPendingStudents,
+  approveStudent,
+  rejectStudent,
 } from "../controllers/coachController.js"; // Importing controller functions
 import multer from "multer";
 
@@ -54,6 +57,7 @@ coachRouter.delete("/coaches/:id", deleteCoach);
 
 //2. Fetch coach statistics and performance
 coachRouter.get("/:id/statistics", getCoachStatisticsAndPerformance);
+coachRouter.get("/pending-students/:coachId", getPendingStudents);
 //course
 coachRouter.get("/coursesByCareerId/:careerId", getCoursesByCareerId);
 coachRouter.get("/mentorsByCourseId/:courseId", getMentorsByCourseId);
@@ -71,6 +75,8 @@ coachRouter.post("/add-cohort", addCohort);
 coachRouter.delete("/delete-cohort/:id", deleteCohort);
 // 5. Fetch recent activities
 coachRouter.get("/:id/recent-activities", getRecentActivities);
+coachRouter.put("/approve-student/:studentId", approveStudent);
+coachRouter.put("/reject-student/:studentId", rejectStudent);
 // 6. Careers and work experience routes
 coachRouter.post("/:id/career", createCareer); // Add new career
 coachRouter.get("/:id/careers", getCoachCareers); // Fetch all careers for a coach

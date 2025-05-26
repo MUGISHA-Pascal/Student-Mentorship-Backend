@@ -23,7 +23,20 @@ export const getCoachProfile = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
+export const getPendingStudents = async (req, res) => {
+  try {
+    const { coachId } = req.params;
+    const students = await prisma.student.findMany({
+      where: { coach: { id: coachId }, user: { approved: false } },
+      include: { user: true },
+    });
+    console.log(students);
+    res.json(students);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 //2 Fetch and calculate statistics and performance
 export const getCoachStatisticsAndPerformance = async (req, res) => {
   const { id } = req.params;
@@ -243,7 +256,50 @@ export const deleteCoachActivity = async (req, res) => {
     res.status(500).json({ message: "Error deleting activity" });
   }
 };
+export const rejectStudent = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { user: true },
+    });
 
+    if (!student || !student.user?.id) {
+      throw new Error("User not found for this student");
+    }
+
+    const user = await prisma.user.update({
+      where: { id: student.user.id },
+      data: { approved: false },
+    });
+    res.json({ message: "Student rejected successfully", user });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+export const approveStudent = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { user: true },
+    });
+
+    if (!student || !student.user?.id) {
+      throw new Error("User not found for this student");
+    }
+
+    const user = await prisma.user.update({
+      where: { id: student.user.id },
+      data: { approved: true },
+    });
+    res.json({ message: "Student approved successfully", user });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 // 7. Fetch recent activities (Upcoming and Ongoing)
 export const getRecentActivities = async (req, res) => {
   const { id } = req.params;

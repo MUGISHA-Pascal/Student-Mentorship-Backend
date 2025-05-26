@@ -13,11 +13,11 @@ export const getUser = async (req, res) => {
         student: { include: { coach: { include: { user: true } } } },
       },
     });
-    console.log("User retrieved:", user.student.coach.user);
     return res
       .status(200)
       .json({ message: "user retrieved successfully", user });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
