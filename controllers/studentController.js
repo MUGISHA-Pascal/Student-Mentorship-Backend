@@ -1047,9 +1047,14 @@ export const assignMentor = async (req, res) => {
     }
     const mentorFound = await prisma.user.findUnique({
       where: { id: mentorId },
-      include: { coach: true },
+      include: { coach: { include: { students: true } } },
     });
     console.log("Mentor found:", mentorFound);
+    if (mentorFound.coach.students.length == 5) {
+      return res
+        .status(400)
+        .json({ message: "Mentor is already assigned to 5 students" });
+    }
     const user = await prisma.student.update({
       where: { id: userFound.id },
       include: { coach: { include: { user: true } } },

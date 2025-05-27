@@ -145,10 +145,29 @@ export const getMentors = async (req, res) => {
       where: {
         coach: {
           isNot: null,
+          students: {
+            some: {}, // ensures they have students
+          },
+        },
+        coach: {
+          students: {
+            some: {}, // needed for type inference
+          },
+        },
+        coach: {
+          _count: {
+            students: {
+              lt: 5,
+            },
+          },
         },
       },
       include: {
-        coach: true,
+        coach: {
+          include: {
+            students: true,
+          },
+        },
       },
     });
 
