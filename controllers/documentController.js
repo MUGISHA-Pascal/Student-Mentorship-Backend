@@ -54,6 +54,43 @@ export const createCourseWithDocument = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+export const getCourseForStudent = async (req, res) => {
+  const { studentId } = req.params;
+
+  try {
+    const couses = await prisma.course.findMany({
+      where: { students: { some: { id: studentId } } },
+      include: {
+        documents: true, // Include related documents
+      },
+    });
+    console.log("Courses for student:", couses);
+    const documents = await prisma.document.findMany({
+      where: { course: { students: { some: { id: studentId } } } },
+      include: {
+        course: true, // Include related course information
+      },
+      orderBy: { uploadDate: "desc" }, // Order by most recent
+    });
+    console.log("Documents for student:", documents);
+    // Enrich documents with file content
+    const enrichedDocuments = documents.map((doc) => {
+      const filePath = path.join(__dirname, "..", "uploads", doc.fileName);
+      const fileExists = fs.existsSync(filePath);
+      console.log("docs found", documents);
+      return {
+        ...doc,
+        fileContent: fileExists ? fs.readFileSync(filePath, "base64") : null, // Read file and encode in base64
+      };
+    });
+
+    // Send the enriched documents
+    res.json(enrichedDocuments);
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 // 2. Fetch All Documents for a Coach
 export const getCourseDocuments = async (req, res) => {
@@ -68,7 +105,7 @@ export const getCourseDocuments = async (req, res) => {
       },
       orderBy: { uploadDate: "desc" }, // Order by most recent
     });
-
+    console.log(documents);
     // Enrich documents with file content
     const enrichedDocuments = documents.map((doc) => {
       const filePath = path.join(__dirname, "..", "uploads", doc.fileName);

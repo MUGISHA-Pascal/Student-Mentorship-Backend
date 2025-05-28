@@ -27,7 +27,7 @@ export const getPendingStudents = async (req, res) => {
   try {
     const { coachId } = req.params;
     const students = await prisma.student.findMany({
-      where: { coach: { id: coachId }, approved: false },
+      where: { coach: { id: coachId }, approved: false, status: "WAITLIST" },
       include: { user: true },
     });
     console.log(students);
@@ -145,39 +145,33 @@ export const getMentors = async (req, res) => {
       where: {
         coach: {
           isNot: null,
-          students: {
-            some: {}, // ensures they have students
-          },
-        },
-        coach: {
-          students: {
-            some: {}, // needed for type inference
-          },
-        },
-        coach: {
-          _count: {
-            students: {
-              lt: 5,
-            },
-          },
         },
       },
       include: {
         coach: {
           include: {
             students: true,
+            _count: {
+              select: { students: true },
+            },
           },
         },
       },
     });
 
-    console.log("mentors found", mentors);
-    res.json(mentors);
+    // Filter mentors whose coach has less than 5 students
+    const filteredMentors = mentors.filter(
+      (user) => user.coach._count.students < 5
+    );
+
+    console.log("mentors found", filteredMentors);
+    res.json(filteredMentors);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching mentors" });
   }
 };
+
 // 3. Fetch all activities of a coach
 export const getCoachActivities = async (req, res) => {
   const { id } = req.params;
@@ -281,7 +275,7 @@ export const rejectStudent = async (req, res) => {
     const user = await prisma.student.update({
       where: { id: studentId },
       include: { user: true },
-      data: { approved: false },
+      data: { approved: false, status: "REJECTED" },
     });
     res.json({ message: "Student rejected successfully", user });
   } catch (error) {
@@ -295,7 +289,7 @@ export const approveStudent = async (req, res) => {
     const user = await prisma.student.update({
       where: { id: studentId },
       include: { user: true },
-      data: { approved: true },
+      data: { approved: true, status: "APPROVED" },
     });
 
     res.json({ message: "Student approved successfully", user });
@@ -1028,18 +1022,12 @@ export const getAllStudents = async (req, res) => {
     // Fetch students assigned to the coach
     const students = await prisma.student.findMany({
       where: {
-        coaches: {
-          some: { id: coachId }, // Ensure the student has this coach relationship
+        coach: {
+          id: coachId,
         },
       },
       include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
+        user: true,
       },
     });
 

@@ -1061,6 +1061,9 @@ export const assignMentor = async (req, res) => {
       data: {
         // coachId: mentorFound.coach.id,
         coach: { connect: { id: mentorFound.coach.id } },
+        addedMentor: true,
+        courses: { connect: { id: courseId } },
+        cohort: { connect: { id: cohortId } },
       },
     });
     console.log("User after update:", user);

@@ -114,19 +114,21 @@ model Course {
 model Student {
   id                  String       @id @default(uuid())
   userId              String       @unique
-  coachId             String?      // REMOVED @unique
+  coachId             String?
+  cohortId            String?      // <-- Add this line for Cohort relation
   status              Status       @default(WAITLIST)
   bio                 String?
   educationLevel      String?
-  approved             Boolean      @default(false)
+  approved            Boolean      @default(false)
   image               String?
-  addedMentor           Boolean      @default(false)
+  addedMentor         Boolean      @default(false)
   currentEnrollmentId String?
   enrollments         Enrollment[] @relation("StudentEnrollments")
   ratings             Rating[]     @relation("StudentRatings")
   user                User         @relation("UserStudent", fields: [userId], references: [id], onDelete: Cascade)
-  coach               Coach?       @relation("CoachStudents", fields: [coachId], references: [id]) 
+  coach               Coach?       @relation("CoachStudents", fields: [coachId], references: [id])
   courses             Course[]     @relation("CourseStudents")
+  cohort              Cohort?      @relation(fields: [cohortId], references: [id]) // <-- Add this line
 }
 
 
@@ -269,9 +271,11 @@ model Cohort {
   updatedAt   DateTime     @updatedAt
   career      Career       @relation(fields: [careerId], references: [id])
   enrollments Enrollment[]
+  students    Student[]    // <-- Add this line for reverse relation
 
   @@index([careerId])
 }
+
 
 model Enrollment {
   id         String           @id @default(uuid())
