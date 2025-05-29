@@ -391,6 +391,21 @@ export const getCohortsByCareerId = async (req, res) => {
     res.status(500).json({ message: "Error fetching careers" });
   }
 };
+export const assignCourseToStudent = async (req, res) => {
+  try {
+    const { studentId, courseId } = req.body;
+    console.log("student id", studentId, "course id", courseId);
+    const student = await prisma.student.update({
+      where: { id: studentId },
+      data: { courses: { connect: { id: courseId } } },
+    });
+    console.log("student updated", student);
+    res.json(student);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 export const getMentorsByCourseId = async (req, res) => {
   const { courseId } = req.params;
   try {
