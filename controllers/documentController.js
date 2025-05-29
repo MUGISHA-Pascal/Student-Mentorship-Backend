@@ -72,18 +72,17 @@ export const getCourseForStudent = async (req, res) => {
       },
       orderBy: { uploadDate: "desc" }, // Order by most recent
     });
-    console.log("Documents for student:", documents);
     // Enrich documents with file content
     const enrichedDocuments = documents.map((doc) => {
       const filePath = path.join(__dirname, "..", "uploads", doc.fileName);
       const fileExists = fs.existsSync(filePath);
-      console.log("docs found", documents);
+      // console.log("docs found", documents);
       return {
         ...doc,
         fileContent: fileExists ? fs.readFileSync(filePath, "base64") : null, // Read file and encode in base64
       };
     });
-
+    // console.log("Enriched Documents:", enrichedDocuments);
     // Send the enriched documents
     res.json(enrichedDocuments);
   } catch (error) {
@@ -105,7 +104,7 @@ export const getCourseDocuments = async (req, res) => {
       },
       orderBy: { uploadDate: "desc" }, // Order by most recent
     });
-    console.log(documents);
+
     // Enrich documents with file content
     const enrichedDocuments = documents.map((doc) => {
       const filePath = path.join(__dirname, "..", "uploads", doc.fileName);
@@ -116,7 +115,7 @@ export const getCourseDocuments = async (req, res) => {
         fileContent: fileExists ? fs.readFileSync(filePath, "base64") : null, // Read file and encode in base64
       };
     });
-
+    console.log("new", enrichedDocuments);
     // Send the enriched documents
     res.json(enrichedDocuments);
   } catch (error) {

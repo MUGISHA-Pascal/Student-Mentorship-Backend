@@ -38,6 +38,7 @@ import {
   getPendingStudents,
   approveStudent,
   rejectStudent,
+  getCoursesForCoach,
 } from "../controllers/coachController.js"; // Importing controller functions
 import multer from "multer";
 
@@ -94,3 +95,4 @@ coachRouter.get("/waitlist/:coachId", getWaitlistForCoach); // Fetch work experi
 coachRouter.put("/:coachId/student/status", updateStudentStatus);
 coachRouter.get("/students/:coachId", getAllStudents);
 coachRouter.post("/jotform", jotFormHook);
+coachRouter.get("/get-courses/:coachId", getCoursesForCoach);
