@@ -829,7 +829,7 @@ export const updateCoachProfile = async (req, res) => {
           fileName: cvFile.filename,
           fileType: cvFile.mimetype,
           fileSize: cvFile.size,
-          fileUrl: `/upload/${cvFile.filename}`,
+          fileUrl: `/uploads/${cvFile.filename}`,
         },
       };
     }
